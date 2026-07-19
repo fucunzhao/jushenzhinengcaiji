@@ -1,0 +1,17 @@
+{
+  "name": "liuzhou-task-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "柳州具身智能数据采集任务库与账号工作台",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check app.js && node --check account-system.js && node --check tools/prelaunch-tests.js",
+    "test:db": "node tools/prelaunch-tests.js db",
+    "test:smoke": "node tools/prelaunch-tests.js smoke",
+    "test:stress": "node tools/prelaunch-tests.js stress"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

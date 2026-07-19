@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>柳州任务库工作台</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">具身智能数据采集</p>
+        <h1>柳州任务库工作台</h1>
+      </div>
+      <div class="top-actions">
+        <button class="icon-button" id="resetFilters" title="重置筛选" aria-label="重置筛选">↺</button>
+        <button class="primary-button" id="exportPlan">导出填报清单</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="filters" aria-label="任务筛选">
+        <section>
+          <label for="searchInput">搜索任务</label>
+          <input id="searchInput" type="search" placeholder="任务编号、名称、道具、动作" />
+        </section>
+
+        <section>
+          <div class="section-title">场景</div>
+          <div class="chip-grid" id="sceneFilters"></div>
+        </section>
+
+        <section>
+          <div class="section-title">优先级</div>
+          <label class="check-row"><input type="checkbox" id="doneOnly" /> 只看已做过</label>
+          <label class="check-row"><input type="checkbox" id="readyOnly" /> 道具和动作明确</label>
+          <label class="check-row"><input type="checkbox" id="unusedOnly" /> 最近未完成</label>
+          <label class="check-row"><input type="checkbox" id="hasWindow" /> 有任务周期</label>
+        </section>
+
+        <section>
+          <div class="section-title">常见动作</div>
+          <div class="chip-grid" id="actionFilters"></div>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <div class="summary" id="summary"></div>
+        <div class="toolbar">
+          <div class="tabs" role="tablist" aria-label="任务视图">
+            <button class="tab active" data-view="recommended">推荐</button>
+            <button class="tab" data-view="all">全部</button>
+            <button class="tab" data-view="training">培训</button>
+            <button class="tab" data-view="done">做过</button>
+            <button class="tab" data-view="pending">待验证</button>
+          </div>
+          <select id="sortSelect" aria-label="排序方式">
+            <option value="recommend">推荐排序</option>
+            <option value="scene">按场景</option>
+            <option value="hours">累计时长高优先</option>
+            <option value="unused">未完成优先</option>
+          </select>
+        </div>
+        <div class="task-list" id="taskList"></div>
+      </section>
+
+      <aside class="planner" aria-label="今日待采">
+        <div class="planner-head">
+          <div>
+            <p class="eyebrow">今日待采</p>
+            <h2>任务领取与填报</h2>
+          </div>
+          <button class="text-button" id="clearPlan">清空</button>
+        </div>
+
+        <div class="plan-controls">
+          <input id="workDate" type="date" />
+          <input id="collectorName" placeholder="采集员姓名" />
+          <select id="deviceNo" aria-label="默认设备编号"></select>
+          <input id="trainerName" placeholder="跟踪培训师" />
+          <select id="defaultLocation" aria-label="默认场地"></select>
+          <select id="defaultRoom" aria-label="默认房间"></select>
+          <input id="defaultHours" type="number" min="0" step="0.1" placeholder="单任务预估小时" />
+          <select id="defaultStatus" aria-label="任务状态">
+            <option value="已下发">已下发</option>
+            <option value="进行中">进行中</option>
+            <option value="已完成">已完成</option>
+            <option value="">空状态</option>
+          </select>
+        </div>
+
+        <div id="deviceSummary" class="device-summary"></div>
+        <div id="planList" class="plan-list"></div>
+
+        <section class="props-panel">
+          <div class="planner-head">
+            <div>
+              <p class="eyebrow">道具准备</p>
+              <h2>所需道具清单</h2>
+            </div>
+            <button class="text-button" id="copyProps">复制</button>
+          </div>
+          <div id="propsSummary" class="props-summary"></div>
+          <details class="inventory-editor">
+            <summary>维护已有道具库</summary>
+            <textarea id="inventoryInput" rows="5" placeholder="每行一个已有道具，也可以用逗号分隔"></textarea>
+            <button class="mini-button add" id="saveInventory">保存道具库</button>
+          </details>
+        </section>
+
+        <div class="detail-panel" id="detailPanel">
+          <p class="empty">选择左侧任务，查看任务说明、动作、道具和步骤。</p>
+        </div>
+      </aside>
+    </main>
+
+    <script src="tasks-data.js"></script>
+    <script src="task-steps-data.js"></script>
+    <script src="prop-inventory.js"></script>
+    <script src="location-data.js"></script>
+    <script src="device-data.js"></script>
+    <script src="app.js"></script>
+    <script src="account-system.js"></script>
+  </body>
+</html>

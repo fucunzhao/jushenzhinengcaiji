@@ -1,0 +1,18 @@
+data/
+.env
+*.log
+*.tmp
+*.bak
+node_modules/
+*.zip
+
+# Local helper scripts and extracted source notes
+*.bat
+training_manual_extracted.txt
+rules_extracted.txt
+task_steps_export.csv
+generate_task_steps.py
+
+# OS/editor files
+.DS_Store
+Thumbs.db
