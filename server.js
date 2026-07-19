@@ -113,7 +113,7 @@ function parseBody(req) {
     let raw = "";
     req.on("data", (chunk) => {
       raw += chunk;
-      if (raw.length > 5 * 1024 * 1024) reject(new Error("请求体过大"));
+      if (raw.length > 20 * 1024 * 1024) reject(new Error("请求体过大"));
     });
     req.on("end", () => {
       if (!raw) return resolve({});
@@ -297,6 +297,62 @@ function upsertUsersFromLibrary(store, rows, actor) {
   return { created, updated, skipped };
 }
 
+function normalizeHeader(text) {
+  return String(text || "").replace(/\s+/g, "").trim();
+}
+
+function mapUserRow(row) {
+  const aliases = {
+    username: ["username", "账号", "登录账号", "账户", "工号"],
+    realName: ["realName", "name", "姓名", "真实姓名", "员工姓名"],
+    phone: ["phone", "手机号", "手机号码", "电话", "联系电话"],
+    role: ["role", "权限", "角色", "账号权限", "岗位"],
+    trainerName: ["trainerName", "负责培训师", "培训师", "培训师姓名", "管理培训师"],
+    trainerPhone: ["trainerPhone", "培训师手机号", "负责培训师手机号"],
+    status: ["status", "状态", "账号状态"],
+    initialPassword: ["initialPassword", "password", "初始密码", "密码"],
+  };
+  const normalized = {};
+  Object.entries(row).forEach(([key, value]) => {
+    normalized[normalizeHeader(key)] = value == null ? "" : String(value).trim();
+  });
+  const mapped = {};
+  Object.entries(aliases).forEach(([field, names]) => {
+    const match = names.map(normalizeHeader).find((name) => normalized[name] !== undefined);
+    mapped[field] = match ? normalized[match] : "";
+  });
+  if (!mapped.username && mapped.phone) mapped.username = mapped.phone;
+  if (!mapped.status) mapped.status = "active";
+  if (!mapped.role) mapped.role = "collector";
+  return mapped;
+}
+
+function normalizeRole(role) {
+  const text = String(role || "").trim();
+  const roleMap = {
+    企业负责人: "owner",
+    负责人: "owner",
+    项目经理: "manager",
+    经理: "manager",
+    培训师: "trainer",
+    采集员: "collector",
+  };
+  return roleMap[text] || text;
+}
+
+function parseAccountWorkbook(base64) {
+  const XLSX = require("xlsx");
+  const buffer = Buffer.from(String(base64 || ""), "base64");
+  const workbook = XLSX.read(buffer, { type: "buffer", cellDates: false });
+  const sheetName = workbook.SheetNames.find((name) => name.includes("人员") || name.includes("账号")) || workbook.SheetNames[0];
+  if (!sheetName) return [];
+  const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "", raw: false });
+  return rows
+    .map(mapUserRow)
+    .map((row) => ({ ...row, role: normalizeRole(row.role) }))
+    .filter((row) => row.realName || row.phone || row.username);
+}
+
 async function handleApi(req, res, pathname) {
   const store = readStore();
   const body = ["POST", "PUT", "PATCH"].includes(req.method) ? await parseBody(req) : {};
@@ -383,6 +439,26 @@ async function handleApi(req, res, pathname) {
       libraries: store.libraries,
       users: store.users.map(publicUser),
       userResult,
+    });
+  }
+
+  if (pathname === "/api/account-template/upload" && req.method === "POST") {
+    if (!["owner", "manager"].includes(user.role)) return sendError(res, 403, "只有企业负责人和项目经理可以通过模板开通账号");
+    if (!body.fileBase64) return sendError(res, 400, "请上传账号模板文件");
+    let rows;
+    try {
+      rows = parseAccountWorkbook(body.fileBase64);
+    } catch (error) {
+      return sendError(res, 400, `Excel 解析失败：${error.message}`);
+    }
+    if (!rows.length) return sendError(res, 400, "模板中没有可导入的人员记录，请检查表头和内容");
+    const userResult = upsertUsersFromLibrary(store, rows, user);
+    addEvent(store, { type: "account-template.uploaded", updatedBy: user.id, userResult, fileName: body.fileName || "" });
+    writeStore(store);
+    return send(res, 200, {
+      users: store.users.map(publicUser),
+      userResult,
+      parsedRows: rows.length,
     });
   }
 

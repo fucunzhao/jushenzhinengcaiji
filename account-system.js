@@ -612,8 +612,8 @@ function accountCreationHtml() {
       </div>
       <div class="library-actions">
         <button class="primary-button" id="downloadAccountTemplate">下载账号开通模板</button>
-        <label class="upload-button">上传账号开通模板<input id="uploadAccountTemplate" type="file" accept=".xls,.html,.htm" /></label>
-        <span class="mini">模板字段：username、realName、phone、role、trainerName、trainerPhone、status、initialPassword。</span>
+        <label class="upload-button">上传账号开通模板<input id="uploadAccountTemplate" type="file" accept=".xls,.xlsx,.html,.htm" /></label>
+        <span class="mini">支持 .xlsx / .xls。模板字段：username、realName、phone、role、trainerName、trainerPhone、status、initialPassword。</span>
       </div>
       <div class="request-warning">
         <b>开通规则</b>
@@ -1164,6 +1164,18 @@ function parseLibraryWorkbook(text) {
   };
 }
 
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || "");
+      resolve(result.includes(",") ? result.split(",").pop() : result);
+    };
+    reader.onerror = () => reject(new Error("文件读取失败"));
+    reader.readAsDataURL(file);
+  });
+}
+
 async function uploadLibrariesExcel(event) {
   const file = event.target.files?.[0];
   if (!file) return;
@@ -1194,15 +1206,14 @@ async function uploadAccountTemplate(event) {
   const file = event.target.files?.[0];
   if (!file) return;
   try {
-    const text = await file.text();
-    if (!text.includes("<table")) throw new Error("请上传从系统下载的账号开通模板并保持 .xls/网页表格格式；暂不支持直接解析另存后的普通 .xlsx 文件");
-    const payload = parseLibraryWorkbook(text);
-    payload.users = payload.users.filter((row) => row.realName || row.phone || row.username);
-    if (!payload.users.length) throw new Error("模板中没有可导入的人员记录");
-    const result = await api("/api/libraries", { method: "PUT", body: JSON.stringify({ users: payload.users }) });
+    const fileBase64 = await fileToBase64(file);
+    const result = await api("/api/account-template/upload", {
+      method: "POST",
+      body: JSON.stringify({ fileName: file.name, fileBase64 }),
+    });
     accountState.users = result.users || accountState.users;
     renderAccountPanel();
-    alert(`账号模板已处理：新增 ${result.userResult?.created || 0} 人，更新 ${result.userResult?.updated || 0} 人，跳过 ${result.userResult?.skipped || 0} 行`);
+    alert(`账号模板已处理：解析 ${result.parsedRows || 0} 行；新增 ${result.userResult?.created || 0} 人，更新 ${result.userResult?.updated || 0} 人，跳过 ${result.userResult?.skipped || 0} 行`);
   } catch (error) {
     alert(error.message);
   } finally {
