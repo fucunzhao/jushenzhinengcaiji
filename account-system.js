@@ -452,14 +452,14 @@ function metricCard(title, value, note) {
 
 function sectionDefaultState(role, title, index) {
   const highUse = {
-    owner: ["全项目任务进度", "人员库开通账号"],
+    owner: ["全项目任务进度", "账号开通模板"],
     manager: ["日报填写", "培训师截止检查", "今日任务进度表"],
     trainer: ["查找并分配任务", "正式任务登记", "今日道具准备清单", "我的采集员进度"],
     collector: ["我的任务"],
   };
   const supportUse = {
     owner: ["库更新状态", "基础库维护中心"],
-    manager: ["人员库开通账号", "基础库维护中心"],
+    manager: ["账号开通模板", "基础库维护中心"],
     trainer: [],
     collector: [],
   };
@@ -604,30 +604,20 @@ function libraryMaintenanceHtml() {
 
 function accountCreationHtml() {
   if (!["owner", "manager"].includes(accountState.user.role)) return "";
-  const trainerOptions = trainerUsers().map((user) => (
-    `<option value="${escapeHtml(user.id)}">${escapeHtml(user.realName)} / ${escapeHtml(user.phone)}</option>`
-  )).join("");
   return `
     <div class="board-section">
       <div class="section-head">
-        <h3>人员库开通账号</h3>
-        <span>员工账号统一生成分发，不允许自行注册</span>
+        <h3>账号开通模板</h3>
+        <span>账号统一通过模板下载、填写、上传开通；员工不允许自行注册</span>
       </div>
-      <div class="register-grid">
-        <input id="newUsername" placeholder="登录账号" />
-        <input id="newRealName" placeholder="真实姓名" />
-        <input id="newPhone" placeholder="手机号" />
-        <input id="newPassword" placeholder="初始密码" />
-        <select id="newRole">
-          <option value="collector">采集员</option>
-          <option value="trainer">培训师</option>
-          <option value="manager">项目经理</option>
-        </select>
-        <select id="newTrainerId">
-          <option value="">采集员选择负责培训师</option>
-          ${trainerOptions}
-        </select>
-        <button class="primary-button" id="createUserBtn">开通账号</button>
+      <div class="library-actions">
+        <button class="primary-button" id="downloadAccountTemplate">下载账号开通模板</button>
+        <label class="upload-button">上传账号开通模板<input id="uploadAccountTemplate" type="file" accept=".xls,.html,.htm" /></label>
+        <span class="mini">模板字段：username、realName、phone、role、trainerName、trainerPhone、status、initialPassword。</span>
+      </div>
+      <div class="request-warning">
+        <b>开通规则</b>
+        <span>role 只能填 owner、manager、trainer、collector；采集员必须填写负责培训师姓名或手机号；手机号或账号已存在时会更新原账号。</span>
       </div>
       <div class="user-list">
         ${accountState.users.map((user) => (
@@ -938,13 +928,10 @@ function bindWorkspaceEvents() {
   document.querySelector("#logoutBtn")?.addEventListener("click", () => logout());
   document.querySelector("#refreshBoard")?.addEventListener("click", () => loadAccountData());
   document.querySelector("#boardDate")?.addEventListener("change", () => loadAccountData());
-  document.querySelector("#createUserBtn")?.addEventListener("click", createUser);
+  document.querySelector("#downloadAccountTemplate")?.addEventListener("click", downloadAccountTemplate);
+  document.querySelector("#uploadAccountTemplate")?.addEventListener("change", uploadAccountTemplate);
   document.querySelector("#downloadLibraries")?.addEventListener("click", downloadLibrariesExcel);
   document.querySelector("#uploadLibraries")?.addEventListener("change", uploadLibrariesExcel);
-  document.querySelector("#newRole")?.addEventListener("change", () => {
-    const role = document.querySelector("#newRole").value;
-    document.querySelector("#newTrainerId").disabled = role !== "collector";
-  });
   document.querySelector("#assignLocation")?.addEventListener("change", (event) => {
     const room = document.querySelector("#assignRoom");
     if (room) room.innerHTML = roomOptions(event.target.value);
@@ -1081,6 +1068,45 @@ function downloadLibrariesExcel() {
   URL.revokeObjectURL(url);
 }
 
+function downloadHtmlExcel(filename, html) {
+  const blob = new Blob(["\ufeff", html], { type: "application/vnd.ms-excel;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function downloadAccountTemplate() {
+  const rows = currentLibraryRows().users;
+  rows.push({
+    username: "",
+    realName: "",
+    phone: "",
+    role: "collector",
+    trainerName: "填写负责培训师姓名",
+    trainerPhone: "或填写负责培训师手机号",
+    status: "active",
+    initialPassword: "123456",
+  });
+  const html = `
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <style>table{border-collapse:collapse;margin-bottom:24px}caption{font-weight:bold;text-align:left;padding:8px 0}td,th{border:1px solid #999;padding:4px 8px;mso-number-format:"\\@";}.tip{color:#666}</style>
+      </head>
+      <body>
+        <p class="tip">账号开通规则：role 只能填 owner、manager、trainer、collector；采集员必须填写 trainerName 或 trainerPhone；账号或手机号已存在则更新。</p>
+        ${tableHtml("人员库", ["username", "realName", "phone", "role", "trainerName", "trainerPhone", "status", "initialPassword"], rows)}
+      </body>
+    </html>
+  `;
+  downloadHtmlExcel(`账号开通模板_${todayString()}.xls`, html);
+}
+
 function tableToRows(table) {
   const headers = Array.from(table.querySelectorAll("thead th")).map((cell) => cell.textContent.trim());
   const bodyRows = Array.from(table.querySelectorAll("tbody tr"));
@@ -1144,6 +1170,25 @@ async function uploadLibrariesExcel(event) {
       `人员新增 ${result.userResult?.created || 0} 人，更新 ${result.userResult?.updated || 0} 人，跳过 ${result.userResult?.skipped || 0} 行`,
     ].join("；");
     alert(`基础库已更新：${imported}`);
+  } catch (error) {
+    alert(error.message);
+  } finally {
+    event.target.value = "";
+  }
+}
+
+async function uploadAccountTemplate(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    if (!text.includes("<table")) throw new Error("请上传从系统下载的账号开通模板；暂不支持直接解析普通 xlsx 文件");
+    const payload = parseLibraryWorkbook(text);
+    if (!payload.users.length) throw new Error("模板中没有可导入的人员记录");
+    const result = await api("/api/libraries", { method: "PUT", body: JSON.stringify({ users: payload.users }) });
+    accountState.users = result.users || accountState.users;
+    renderAccountPanel();
+    alert(`账号模板已处理：新增 ${result.userResult?.created || 0} 人，更新 ${result.userResult?.updated || 0} 人，跳过 ${result.userResult?.skipped || 0} 行`);
   } catch (error) {
     alert(error.message);
   } finally {

@@ -246,7 +246,11 @@ function upsertUsersFromLibrary(store, rows, actor) {
   let created = 0;
   let updated = 0;
   let skipped = 0;
-  rows.forEach((row) => {
+  const orderedRows = [
+    ...rows.filter((row) => String(row.role || "collector").trim() !== "collector"),
+    ...rows.filter((row) => String(row.role || "collector").trim() === "collector"),
+  ];
+  orderedRows.forEach((row) => {
     const realName = String(row.realName || row.name || "").trim();
     const phone = String(row.phone || "").trim();
     const username = String(row.username || phone || "").trim();
