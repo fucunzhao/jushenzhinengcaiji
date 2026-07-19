@@ -667,6 +667,76 @@ input:focus, select:focus {
   overflow: hidden;
 }
 
+.task-library-fold {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.task-library-fold:not([open]) {
+  flex: 0 0 auto;
+}
+
+.task-library-summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  background: #fbfcfa;
+}
+
+.task-library-summary::-webkit-details-marker {
+  display: none;
+}
+
+.task-library-summary span {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.task-library-summary b {
+  font-size: 16px;
+}
+
+.task-library-summary em,
+.task-library-summary small {
+  color: var(--muted);
+  font-style: normal;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.task-library-summary::after {
+  content: "展开";
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 5px 8px;
+  color: var(--muted);
+  background: white;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.task-library-fold[open] > .task-library-summary::after {
+  content: "收起";
+}
+
+.task-library-body {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border-top: 1px solid var(--line);
+}
+
 .summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(120px, 1fr));
@@ -726,6 +796,7 @@ input:focus, select:focus {
   gap: 12px;
   overflow: auto;
   padding-bottom: 4px;
+  min-height: 0;
 }
 
 .task-card {
@@ -1178,6 +1249,30 @@ input:focus, select:focus {
 
   .toolbar select {
     width: 100%;
+  }
+
+  .workspace {
+    overflow: visible;
+  }
+
+  .task-library-fold[open] {
+    max-height: 72vh;
+  }
+
+  .task-library-summary {
+    align-items: flex-start;
+  }
+
+  .task-library-summary small {
+    display: none;
+  }
+
+  .task-library-body {
+    overflow: hidden;
+  }
+
+  .task-list {
+    max-height: 48vh;
   }
 
   .account-head,

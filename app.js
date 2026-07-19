@@ -38,6 +38,8 @@ const el = {
   unusedOnly: document.querySelector("#unusedOnly"),
   hasWindow: document.querySelector("#hasWindow"),
   summary: document.querySelector("#summary"),
+  taskFold: document.querySelector("#taskLibraryFold"),
+  taskFoldSummary: document.querySelector("#taskFoldSummary"),
   taskList: document.querySelector("#taskList"),
   tabs: document.querySelectorAll(".tab"),
   sort: document.querySelector("#sortSelect"),
@@ -254,6 +256,10 @@ function renderSummary() {
   const done = library.tasks.filter((task) => task.doneCount > 0).length;
   const locationGaps = library.tasks.filter((task) => taskLocationInfo(task).notDone.length > 0).length;
   const planHours = state.plan.reduce((sum, item) => sum + Number(item.hours || state.defaultHours || 0), 0);
+  const matched = filteredTasks().length;
+  if (el.taskFoldSummary) {
+    el.taskFoldSummary.textContent = `当前筛选 ${matched} / ${total} 条 · 已做过 ${done} · 未做地点 ${locationGaps}`;
+  }
   el.summary.innerHTML = [
     ["任务总量", total],
     ["已做过任务", done],
@@ -304,6 +310,20 @@ function renderTasks() {
       </article>
     `;
   }).join("") || `<p class="empty">没有匹配任务，换个筛选条件试试。</p>`;
+}
+
+function setupTaskLibraryFold() {
+  if (!el.taskFold) return;
+  const saved = localStorage.getItem("taskLibraryOpen");
+  const isMobile = window.matchMedia("(max-width: 760px)").matches;
+  el.taskFold.open = saved == null ? !isMobile : saved === "1";
+  el.taskFold.addEventListener("toggle", () => {
+    localStorage.setItem("taskLibraryOpen", el.taskFold.open ? "1" : "0");
+  });
+}
+
+function openTaskLibrary() {
+  if (el.taskFold && !el.taskFold.open) el.taskFold.open = true;
 }
 
 function renderDetail(task) {
@@ -593,6 +613,7 @@ function bindEvents() {
     if (detailButton) {
       event.preventDefault();
       event.stopPropagation();
+      openTaskLibrary();
       const id = detailButton.dataset.detail;
       state.selectedTaskId = id;
       renderDetail(library.tasks.find((task) => task.id === id));
@@ -603,10 +624,12 @@ function bindEvents() {
     if (addButton) {
       event.preventDefault();
       event.stopPropagation();
+      openTaskLibrary();
       addToPlan(addButton.dataset.add);
       return;
     }
     if (card) {
+      openTaskLibrary();
       const id = card.dataset.id;
       state.selectedTaskId = id;
       renderDetail(library.tasks.find((task) => task.id === id));
@@ -701,6 +724,7 @@ function updatePlanItem(event) {
 renderLocationDefaults();
 renderDefaultDevice();
 renderChips();
+setupTaskLibraryFold();
 renderTasks();
 renderPlan();
 bindEvents();

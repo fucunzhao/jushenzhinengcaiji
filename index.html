@@ -45,23 +45,34 @@
       </aside>
 
       <section class="workspace">
-        <div class="summary" id="summary"></div>
-        <div class="toolbar">
-          <div class="tabs" role="tablist" aria-label="任务视图">
-            <button class="tab active" data-view="recommended">推荐</button>
-            <button class="tab" data-view="all">全部</button>
-            <button class="tab" data-view="training">培训</button>
-            <button class="tab" data-view="done">做过</button>
-            <button class="tab" data-view="pending">待验证</button>
+        <details class="task-library-fold" id="taskLibraryFold">
+          <summary class="task-library-summary">
+            <span>
+              <b>?????</b>
+              <em>???????????</em>
+            </span>
+            <small id="taskFoldSummary">????????</small>
+          </summary>
+          <div class="task-library-body">
+            <div class="summary" id="summary"></div>
+            <div class="toolbar">
+              <div class="tabs" role="tablist" aria-label="任务视图">
+                <button class="tab active" data-view="recommended">推荐</button>
+                <button class="tab" data-view="all">全部</button>
+                <button class="tab" data-view="training">培训</button>
+                <button class="tab" data-view="done">做过</button>
+                <button class="tab" data-view="pending">待验证</button>
+              </div>
+              <select id="sortSelect" aria-label="排序方式">
+                <option value="recommend">推荐排序</option>
+                <option value="scene">按场景</option>
+                <option value="hours">累计时长高优先</option>
+                <option value="unused">未完成优先</option>
+              </select>
+            </div>
+            <div class="task-list" id="taskList"></div>
           </div>
-          <select id="sortSelect" aria-label="排序方式">
-            <option value="recommend">推荐排序</option>
-            <option value="scene">按场景</option>
-            <option value="hours">累计时长高优先</option>
-            <option value="unused">未完成优先</option>
-          </select>
-        </div>
-        <div class="task-list" id="taskList"></div>
+        </details>
       </section>
 
       <aside class="planner" aria-label="今日待采">
