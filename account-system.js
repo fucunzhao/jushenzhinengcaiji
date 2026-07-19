@@ -1108,8 +1108,14 @@ function downloadAccountTemplate() {
 }
 
 function tableToRows(table) {
-  const headers = Array.from(table.querySelectorAll("thead th")).map((cell) => cell.textContent.trim());
-  const bodyRows = Array.from(table.querySelectorAll("tbody tr"));
+  const allRows = Array.from(table.querySelectorAll("tr"));
+  let headers = Array.from(table.querySelectorAll("thead th")).map((cell) => cell.textContent.trim());
+  let bodyRows = Array.from(table.querySelectorAll("tbody tr"));
+  if (!headers.length && allRows.length) {
+    headers = Array.from(allRows[0].children).map((cell) => cell.textContent.trim());
+    bodyRows = allRows.slice(1);
+  }
+  headers = headers.map((item) => item.replace(/\s+/g, ""));
   return bodyRows.map((tr) => {
     const cells = Array.from(tr.children).map((cell) => cell.textContent.trim());
     return headers.reduce((row, key, index) => {
@@ -1124,8 +1130,15 @@ function parseLibraryWorkbook(text) {
   const tables = Array.from(doc.querySelectorAll("table"));
   const byName = {};
   tables.forEach((table) => {
-    const name = table.dataset.sheet || table.querySelector("caption")?.textContent?.trim();
-    if (name) byName[name] = tableToRows(table);
+    let name = table.dataset.sheet || table.querySelector("caption")?.textContent?.trim();
+    const rows = tableToRows(table);
+    const keys = Object.keys(rows[0] || {});
+    if (!name && ["username", "realName", "phone", "role"].every((key) => keys.includes(key))) name = "人员库";
+    if (!name && ["id", "scene", "name", "description"].every((key) => keys.includes(key))) name = "任务库";
+    if (!name && ["category", "name"].every((key) => keys.includes(key))) name = "道具库";
+    if (!name && ["id", "name", "type", "rooms"].every((key) => keys.includes(key))) name = "场地库";
+    if (!name && ["id", "label", "city", "status"].every((key) => keys.includes(key))) name = "设备库";
+    if (name) byName[name] = rows;
   });
   return {
     users: byName["人员库"] || [],
@@ -1182,8 +1195,9 @@ async function uploadAccountTemplate(event) {
   if (!file) return;
   try {
     const text = await file.text();
-    if (!text.includes("<table")) throw new Error("请上传从系统下载的账号开通模板；暂不支持直接解析普通 xlsx 文件");
+    if (!text.includes("<table")) throw new Error("请上传从系统下载的账号开通模板并保持 .xls/网页表格格式；暂不支持直接解析另存后的普通 .xlsx 文件");
     const payload = parseLibraryWorkbook(text);
+    payload.users = payload.users.filter((row) => row.realName || row.phone || row.username);
     if (!payload.users.length) throw new Error("模板中没有可导入的人员记录");
     const result = await api("/api/libraries", { method: "PUT", body: JSON.stringify({ users: payload.users }) });
     accountState.users = result.users || accountState.users;
