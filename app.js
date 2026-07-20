@@ -40,6 +40,12 @@ const el = {
   summary: document.querySelector("#summary"),
   taskFold: document.querySelector("#taskLibraryFold"),
   taskFoldSummary: document.querySelector("#taskFoldSummary"),
+  openTaskLibrary: document.querySelector("#openTaskLibrary"),
+  taskLibraryModal: document.querySelector("#taskLibraryModal"),
+  closeTaskLibrary: document.querySelector("#closeTaskLibrary"),
+  closeTaskLibraryBackdrop: document.querySelector("#closeTaskLibraryBackdrop"),
+  taskDetailDrawer: document.querySelector("#taskDetailDrawer"),
+  closeTaskDetail: document.querySelector("#closeTaskDetail"),
   taskList: document.querySelector("#taskList"),
   tabs: document.querySelectorAll(".tab"),
   sort: document.querySelector("#sortSelect"),
@@ -323,7 +329,25 @@ function setupTaskLibraryFold() {
 }
 
 function openTaskLibrary() {
-  if (el.taskFold && !el.taskFold.open) el.taskFold.open = true;
+  if (!el.taskLibraryModal) return;
+  el.taskLibraryModal.classList.add("open");
+  el.taskLibraryModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+}
+
+function closeTaskLibrary() {
+  if (!el.taskLibraryModal) return;
+  el.taskLibraryModal.classList.remove("open", "detail-open");
+  el.taskLibraryModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+}
+
+function openTaskDetailDrawer() {
+  el.taskLibraryModal?.classList.add("detail-open");
+}
+
+function closeTaskDetailDrawer() {
+  el.taskLibraryModal?.classList.remove("detail-open");
 }
 
 function renderDetail(task) {
@@ -353,6 +377,7 @@ function renderDetail(task) {
     ${stepPlan ? renderStepPlan(stepPlan) : ""}
     <button class="primary-button" data-add="${task.id}" ${lockedByOther ? "disabled" : ""}>${lockedByOther ? "今日已被其他培训师领取" : "加入今日待采"}</button>
   `;
+  openTaskDetailDrawer();
 }
 
 function renderStepPlan(plan) {
@@ -564,6 +589,13 @@ function copyPropsText() {
 }
 
 function bindEvents() {
+  el.openTaskLibrary?.addEventListener("click", openTaskLibrary);
+  el.closeTaskLibrary?.addEventListener("click", closeTaskLibrary);
+  el.closeTaskLibraryBackdrop?.addEventListener("click", closeTaskLibrary);
+  el.closeTaskDetail?.addEventListener("click", closeTaskDetailDrawer);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeTaskLibrary();
+  });
   el.search.addEventListener("input", (event) => {
     state.query = event.target.value;
     renderTasks();

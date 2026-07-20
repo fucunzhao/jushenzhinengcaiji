@@ -44,35 +44,16 @@
         </section>
       </aside>
 
-      <section class="workspace">
-        <details class="task-library-fold" id="taskLibraryFold">
-          <summary class="task-library-summary">
-            <span>
-              <b>?????</b>
-              <em>???????????</em>
-            </span>
-            <small id="taskFoldSummary">????????</small>
-          </summary>
-          <div class="task-library-body">
-            <div class="summary" id="summary"></div>
-            <div class="toolbar">
-              <div class="tabs" role="tablist" aria-label="任务视图">
-                <button class="tab active" data-view="recommended">推荐</button>
-                <button class="tab" data-view="all">全部</button>
-                <button class="tab" data-view="training">培训</button>
-                <button class="tab" data-view="done">做过</button>
-                <button class="tab" data-view="pending">待验证</button>
-              </div>
-              <select id="sortSelect" aria-label="排序方式">
-                <option value="recommend">推荐排序</option>
-                <option value="scene">按场景</option>
-                <option value="hours">累计时长高优先</option>
-                <option value="unused">未完成优先</option>
-              </select>
-            </div>
-            <div class="task-list" id="taskList"></div>
+      <section class="workspace task-library-entry" aria-label="任务库入口">
+        <div class="task-entry-card">
+          <div>
+            <p class="eyebrow">任务库</p>
+            <h2>打开任务选择器</h2>
+            <p class="mini">任务卡片已收起到二级界面，点击后再搜索、筛选、查看详情和选择任务。</p>
           </div>
-        </details>
+          <button class="primary-button" id="openTaskLibrary">打开任务库</button>
+        </div>
+        <div class="summary compact-summary" id="summary"></div>
       </section>
 
       <aside class="planner" aria-label="今日待采">
@@ -119,11 +100,50 @@
           </details>
         </section>
 
-        <div class="detail-panel" id="detailPanel">
-          <p class="empty">选择左侧任务，查看任务说明、动作、道具和步骤。</p>
-        </div>
+
       </aside>
     </main>
+
+    <div class="task-library-modal" id="taskLibraryModal" aria-hidden="true">
+      <div class="task-library-backdrop" id="closeTaskLibraryBackdrop"></div>
+      <section class="task-library-page" aria-label="任务库二级页面">
+        <header class="task-library-page-head">
+          <div>
+            <p class="eyebrow">任务库</p>
+            <h2>任务查看与选择</h2>
+          </div>
+          <button class="text-button" id="closeTaskLibrary">关闭</button>
+        </header>
+        <div class="toolbar task-library-toolbar">
+          <div class="tabs" role="tablist" aria-label="任务视图">
+            <button class="tab active" data-view="recommended">推荐</button>
+            <button class="tab" data-view="all">全部</button>
+            <button class="tab" data-view="training">培训</button>
+            <button class="tab" data-view="done">做过</button>
+            <button class="tab" data-view="pending">待验证</button>
+          </div>
+          <select id="sortSelect" aria-label="排序方式">
+            <option value="recommend">推荐排序</option>
+            <option value="scene">按场景</option>
+            <option value="hours">累计时长高优先</option>
+            <option value="unused">未完成优先</option>
+          </select>
+        </div>
+        <div class="task-library-content">
+          <div class="task-list" id="taskList"></div>
+          <aside class="task-detail-drawer" id="taskDetailDrawer" aria-label="任务详情抽屉">
+            <div class="drawer-head">
+              <b>任务详情</b>
+              <button class="text-button" id="closeTaskDetail">收起详情</button>
+            </div>
+            <div class="detail-panel" id="detailPanel">
+              <p class="empty">点击任务卡片上的“查看”，详情会在这里向右拉出。</p>
+            </div>
+          </aside>
+        </div>
+      </section>
+    </div>
+
 
     <script src="tasks-data.js"></script>
     <script src="task-steps-data.js"></script>
