@@ -125,7 +125,10 @@ function compactDate(dateText) {
 function requestedTaskName(baseName, suffix) {
   const cleanName = String(baseName || "").trim();
   const cleanSuffix = String(suffix || "").trim();
-  return cleanSuffix ? `${cleanName}_${cleanSuffix}` : cleanName;
+  if (!cleanSuffix) return cleanName;
+  if (cleanName.includes("自定义条件")) return cleanName.replace("自定义条件", `_${cleanSuffix}`);
+  if (cleanName.includes("_free_G")) return cleanName.replace("_free_G", `_${cleanSuffix}_free_G`);
+  return `${cleanName}_${cleanSuffix}`;
 }
 
 function allRoomChoices() {
@@ -726,7 +729,7 @@ function formalRequestHtml(collectors, date) {
   const task = taskById(accountState.selectedTaskId || window.__selectedTaskIdForAccount);
   const count = Number(localStorage.getItem("requestCount") || 3);
   const requestDate = localStorage.getItem("requestDate") || date || todayString();
-  const suffixPrefix = localStorage.getItem("requestSuffixPrefix") || `${compactDate(requestDate)}_柳州`;
+  const suffixPrefix = localStorage.getItem("requestSuffixPrefix") || `柳州${compactDate(requestDate)}`;
   const rooms = suggestedRoomsForTask(task, count);
   const claim = task ? claimForTask(task.id, requestDate) : null;
   const lockedByOther = task ? taskLockedByOther(task.id, requestDate) : false;
@@ -742,12 +745,12 @@ function formalRequestHtml(collectors, date) {
       </div>
       <div class="selected-task-box">
         <b>${task ? escapeHtml(task.name) : "尚未选择基础任务"}</b>
-        <span>${task ? "系统会在任务名末尾追加后缀，例如：基础任务名_0719_柳州_1" : "请先在任务库点击一条要申请的任务"}</span>
-        ${claim ? `<strong class="claim-alert ${lockedByOther ? "blocked" : "mine"}">今日已领取：${escapeHtml(claim.trainerName || userName(claim.trainerId) || "培训师")}；后缀：${escapeHtml(claim.suffixPrefix || "未填写")}${lockedByOther ? "。本账号不可重复领取。" : "。可继续编辑自己的申请。"}</strong>` : ""}
+        <span>${task ? "系统会把任务名中的“自定义条件”替换成“_柳州日期_序号”，并保留 _free_G 在最后。" : "请先在任务库点击一条要申请的任务"}</span>
+        ${claim ? `<strong class="claim-alert ${lockedByOther ? "blocked" : "mine"}">今日已领取：${escapeHtml(claim.trainerName || userName(claim.trainerId) || "培训师")}；任务标识：${escapeHtml(claim.suffixPrefix || "未填写")}${lockedByOther ? "。本账号不可重复领取。" : "。可继续编辑自己的申请。"}</strong>` : ""}
       </div>
       <div class="request-controls">
         <label>申请日期<input id="requestDate" type="date" value="${escapeHtml(requestDate)}" /></label>
-        <label>后缀前缀<input id="requestSuffixPrefix" value="${escapeHtml(suffixPrefix)}" placeholder="0719_柳州" /></label>
+        <label>命名标识<input id="requestSuffixPrefix" value="${escapeHtml(suffixPrefix)}" placeholder="柳州0720" /></label>
         <label>申请条数<input id="requestCount" type="number" min="1" max="12" step="1" value="${count}" /></label>
         <button class="primary-button" id="refreshRequestRows">生成申请行</button>
         <button class="text-button" id="copyFormalRows" ${lockedByOther ? "disabled" : ""}>复制正式登记表行</button>
@@ -756,7 +759,7 @@ function formalRequestHtml(collectors, date) {
       </div>
       <div class="request-warning">
         <b>防领错规则</b>
-        <span>采集员只领取系统分配给自己的完整任务名，必须核对末尾后缀和指定场地房间；同一基础任务的不同后缀要在不同环境完成。</span>
+        <span>采集员只领取系统分配给自己的完整任务名，必须核对“柳州日期_序号”任务标识和指定场地房间；同一基础任务的不同序号要在不同环境完成。</span>
       </div>
       <div class="formal-request-table" id="formalRequestRows">
         ${requestRowsHtml(task, count, suffixPrefix, requestDate, rooms, collectorOptions)}
@@ -1259,7 +1262,7 @@ async function assignTask() {
 function formalRequestConfig() {
   return {
     date: document.querySelector("#requestDate")?.value || selectedDate(),
-    suffixPrefix: document.querySelector("#requestSuffixPrefix")?.value.trim() || `${compactDate(selectedDate())}_柳州`,
+    suffixPrefix: document.querySelector("#requestSuffixPrefix")?.value.trim() || `柳州${compactDate(selectedDate())}`,
     count: Math.max(1, Math.min(12, Number(document.querySelector("#requestCount")?.value || 3))),
   };
 }
@@ -1330,8 +1333,8 @@ function claimNoticeText() {
   const rows = formalRequestRows();
   if (!rows.length) return "";
   return [
-    "任务领取提醒：请只领取分配给自己的完整任务名，重点核对末尾后缀，领错后缀会导致任务场景和登记表不匹配。",
-    ...rows.map((row) => `${row.index}. ${row.collectorName}：领取【${row.taskName}】；采集地点【${row.locationName || "待定"} / ${row.room || "待定"}】；后缀【${row.suffix}】。`),
+    "任务领取提醒：请只领取分配给自己的完整任务名，重点核对“柳州日期_序号”任务标识，领错会导致任务场景和登记表不匹配。",
+    ...rows.map((row) => `${row.index}. ${row.collectorName}：领取【${row.taskName}】；采集地点【${row.locationName || "待定"} / ${row.room || "待定"}】；任务标识【${row.suffix}】。`),
   ].join("\n");
 }
 
