@@ -79,6 +79,75 @@ function normalize(text) {
   return String(text || "").toLowerCase().trim();
 }
 
+function normalizeSearch(text) {
+  return normalize(text)
+    .replace(/[_*×x\-—–|/\\()[\]{}【】「」『』:：,，.。;；、\s]+/g, "");
+}
+
+function searchTerms(query) {
+  return normalize(query)
+    .split(/[\s,，;；、/\\]+/)
+    .map((item) => normalizeSearch(item))
+    .filter(Boolean);
+}
+
+function isSubsequence(term, text) {
+  let cursor = 0;
+  for (const char of text) {
+    if (char === term[cursor]) cursor += 1;
+    if (cursor === term.length) return true;
+  }
+  return false;
+}
+
+function fuzzyIncludes(text, term) {
+  if (!term) return true;
+  if (text.includes(term)) return true;
+  return term.length > 1 && isSubsequence(term, text);
+}
+
+function taskSearchText(task) {
+  return normalizeSearch([
+    task.id,
+    task.scene,
+    task.name,
+    task.description,
+    task.actionText,
+    task.propText,
+    (task.actions || []).join(" "),
+    (task.props || []).join(" "),
+  ].join(" "));
+}
+
+function searchScore(task, query) {
+  const terms = searchTerms(query);
+  if (!terms.length) return 0;
+  const name = normalizeSearch(task.name);
+  const scene = normalizeSearch(task.scene);
+  const props = normalizeSearch(task.propText);
+  const actions = normalizeSearch(task.actionText);
+  const desc = normalizeSearch(task.description);
+  const id = normalizeSearch(task.id);
+  const all = taskSearchText(task);
+  return terms.reduce((score, term) => {
+    if (name.includes(term)) return score + 120;
+    if (props.includes(term)) return score + 95;
+    if (actions.includes(term)) return score + 85;
+    if (scene.includes(term) || id.includes(term)) return score + 75;
+    if (desc.includes(term)) return score + 65;
+    if (fuzzyIncludes(name, term)) return score + 45;
+    if (fuzzyIncludes(all, term)) return score + 20;
+    return score;
+  }, 0);
+}
+
+function taskMatchesQuery(task, query) {
+  const terms = searchTerms(query);
+  if (!terms.length) return true;
+  const text = taskSearchText(task);
+  return terms.every((term) => fuzzyIncludes(text, term));
+}
+
 function normalizeProp(text) {
   return String(text || "")
     .replace(/[（）()]/g, "")
@@ -194,12 +263,8 @@ function scoreTask(task) {
 
 function filteredTasks() {
   let tasks = [...library.tasks];
-  const q = normalize(state.query);
-  if (q) {
-    tasks = tasks.filter((task) => normalize([
-      task.id, task.scene, task.name, task.description, task.actionText, task.propText,
-    ].join(" ")).includes(q));
-  }
+  const queryTerms = searchTerms(state.query);
+  if (queryTerms.length) tasks = tasks.filter((task) => taskMatchesQuery(task, state.query));
   if (state.scene !== "全部") tasks = tasks.filter((task) => task.scene === state.scene);
   if (state.action) tasks = tasks.filter((task) => task.actionText.includes(state.action));
   if (state.doneOnly) tasks = tasks.filter((task) => task.doneCount > 0);
@@ -212,6 +277,10 @@ function filteredTasks() {
   if (state.view === "training") tasks = tasks.filter(isTrainingFriendly);
 
   tasks.sort((a, b) => {
+    if (queryTerms.length) {
+      const queryDiff = searchScore(b, state.query) - searchScore(a, state.query);
+      if (queryDiff) return queryDiff;
+    }
     if (state.sort === "scene") return `${a.scene}${a.id}`.localeCompare(`${b.scene}${b.id}`, "zh-CN");
     if (state.sort === "hours") return b.doneHours - a.doneHours;
     if (state.sort === "unused") return Number(a.doneCount > 0) - Number(b.doneCount > 0);
