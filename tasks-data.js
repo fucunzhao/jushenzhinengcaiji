@@ -1,6 +1,6 @@
 window.TASK_LIBRARY = {
-  "source": "柳州基地任务完成情况汇总.xlsx / 甲方任务表2（已更新7.18）",
-  "updatedAt": "2026-07-19",
+  "source": "柳州基地任务完成情况汇总.xlsx / 甲方任务表2（已更新7.18） / 新任务.xlsx",
+  "updatedAt": "2026-07-20",
   "tasks": [
     {
       "id": "115",
@@ -11250,6 +11250,399 @@ window.TASK_LIBRARY = {
       "peopleCount": 0,
       "deviceCount": 0,
       "donePeople": []
+    },
+    {
+      "id": "new-98",
+      "createdAt": "2026-07-20",
+      "scene": "厨房",
+      "name": "厨房_锅铲汤勺整理悬挂_自定义条件_free_G",
+      "description": "描述：锅铲、汤勺、漏勺等厨具四处散落，按类别分别悬挂至挂钩 动作：清洗、悬挂、归位",
+      "actions": [
+        "清洗、悬挂、归位"
+      ],
+      "actionText": "清洗、悬挂、归位",
+      "props": [
+        "厨具、绑带、挂钩、收纳架、清洗池"
+      ],
+      "propText": "厨具、绑带、挂钩、收纳架、清洗池",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-110",
+      "createdAt": "2026-07-20",
+      "scene": "厨房",
+      "name": "厨房_调味瓶开盖取料归位_自定义条件_free_G",
+      "description": "描述：依次拿起各类散乱的带盖调味瓶，打开瓶盖导出部分到碗里再旋紧瓶盖，最后整齐排列 动作：拿、打开、检查、旋紧、排列",
+      "actions": [
+        "拿、打开、检查、旋紧、排列"
+      ],
+      "actionText": "拿、打开、检查、旋紧、排列",
+      "props": [
+        "酱油瓶、醋瓶、油壶、料酒瓶等带盖调味瓶"
+      ],
+      "propText": "酱油瓶、醋瓶、油壶、料酒瓶等带盖调味瓶",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-422",
+      "createdAt": "2026-07-20",
+      "scene": "厨房",
+      "name": "厨房_保鲜盒取物复原_自定义条件_free_G",
+      "description": "描述：打开保鲜盒盖扣，取出物品，再把保鲜盒盖盖好，按压盖扣密封保鲜盒 动作：抽拉、托举、移动、放置",
+      "actions": [
+        "抽拉、托举、移动、放置"
+      ],
+      "actionText": "抽拉、托举、移动、放置",
+      "props": [
+        "保鲜盒"
+      ],
+      "propText": "保鲜盒",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-484",
+      "createdAt": "2026-07-20",
+      "scene": "厨房",
+      "name": "厨房_燕麦片漏斗装瓶装罐_自定义条件_free_G",
+      "description": "描述：将漏斗插入瓶口罐口，倒入燕麦片、按压压实、旋紧盖子 动作：插入,倾倒,按压,旋紧",
+      "actions": [
+        "插入",
+        "倾倒",
+        "按压",
+        "旋紧"
+      ],
+      "actionText": "插入,倾倒,按压,旋紧",
+      "props": [
+        "燕麦片、漏斗、玻璃瓶、碗、压棒"
+      ],
+      "propText": "燕麦片、漏斗、玻璃瓶、碗、压棒",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-538",
+      "createdAt": "2026-07-20",
+      "scene": "卧室",
+      "name": "卧室_护肤品补液_自定义条件_free_G",
+      "description": "描述：瓶装护肤品旋转开盖补液，按压泵头测试出液 动作：旋开、按压、擦拭瓶口、旋紧、摆正",
+      "actions": [
+        "旋开、按压、擦拭瓶口、旋紧、摆正"
+      ],
+      "actionText": "旋开、按压、擦拭瓶口、旋紧、摆正",
+      "props": [
+        "瓶装水乳护肤品"
+      ],
+      "propText": "瓶装水乳护肤品",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-580",
+      "createdAt": "2026-07-20",
+      "scene": "卧室",
+      "name": "卧室_按压开合弹盖垃圾桶扔垃圾_自定义条件_free_G",
+      "description": "描述： 按压垃圾桶弹盖，投放垃圾，最后松开关闭垃圾桶 动作： 按压、掀开、投放、摆正、放置",
+      "actions": [
+        "按压、掀开、投放、摆正、放置"
+      ],
+      "actionText": "按压、掀开、投放、摆正、放置",
+      "props": [
+        "弹盖垃圾桶、化妆废纸、梳妆台"
+      ],
+      "propText": "弹盖垃圾桶、化妆废纸、梳妆台",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-605",
+      "createdAt": "2026-07-20",
+      "scene": "通用",
+      "name": "通用_推抽屉关上_自定义条件_free_G",
+      "description": "描述：抽屉半开，露出内部物品。按住面板向前推动使其闭合，按压抽屉边缘确认卡扣锁紧 动作：向前推动、按压、轻拉",
+      "actions": [
+        "向前推动、按压、轻拉"
+      ],
+      "actionText": "向前推动、按压、轻拉",
+      "props": [
+        "抽屉"
+      ],
+      "propText": "抽屉",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-617",
+      "createdAt": "2026-07-20",
+      "scene": "客厅",
+      "name": "客厅_台灯接电开关_自定义条件_free_G",
+      "description": "描述：台灯电线末端插头未插入插座，灯不亮。将插头对准插座孔水平推入，按压插头使其完全插入，按压插座按钮打开电源开关，再按压台灯开关打开台灯 动作：插入、按压",
+      "actions": [
+        "插入、按压"
+      ],
+      "actionText": "插入、按压",
+      "props": [
+        "插头、轻质插座板"
+      ],
+      "propText": "插头、轻质插座板",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-661",
+      "createdAt": "2026-07-20",
+      "scene": "厨房",
+      "name": "厨房_打包盒堆叠_自定义条件_free_G",
+      "description": "描述：几个空的打包盒需要收纳整理，逐只抓取打包盒对齐一只只往上堆叠套在一起，按压堆叠成紧实的一摞，推动到桌面指定位置摆放好。 动作：抓取、对准、堆叠、推动、摆放",
+      "actions": [
+        "抓取、对准、堆叠、推动、摆放"
+      ],
+      "actionText": "抓取、对准、堆叠、推动、摆放",
+      "props": [
+        "打包盒、台面"
+      ],
+      "propText": "打包盒、台面",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-662",
+      "createdAt": "2026-07-20",
+      "scene": "厨房",
+      "name": "厨房_纸杯套叠_自定义条件_free_G",
+      "description": "描述：台面上散落的多只一次性纸杯需要套叠，逐只抓取纸杯对齐一只只往上堆叠套在一起，按压堆叠成紧实的一摞，推动到桌面指定位置摆放好 动作：抓取、对准、按压、堆叠、推动",
+      "actions": [
+        "抓取、对准、按压、堆叠、推动"
+      ],
+      "actionText": "抓取、对准、按压、堆叠、推动",
+      "props": [
+        "一次性纸杯、台面"
+      ],
+      "propText": "一次性纸杯、台面",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-789",
+      "createdAt": "2026-07-20",
+      "scene": "厨房",
+      "name": "厨房_递送归位保鲜盒_自定义条件_free_G",
+      "description": "描述：用右夹爪从台面上拿起保鲜盒递送至左夹爪，左夹爪接住后夹稳固定，右夹爪再拿起盒盖盖住保鲜盒，两夹爪配合将盒身与盒盖扣合，最后将扣好的保鲜盒推送至桌面指定位置 动作：拿起, 递送, 接住, 扣合, 推入",
+      "actions": [
+        "拿起",
+        "递送",
+        "接住",
+        "扣合",
+        "推入"
+      ],
+      "actionText": "拿起, 递送, 接住, 扣合, 推入",
+      "props": [
+        "保鲜盒（含盖）"
+      ],
+      "propText": "保鲜盒（含盖）",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-793",
+      "createdAt": "2026-07-20",
+      "scene": "客厅",
+      "name": "客厅_收纳工具取用_自定义条件_free_G",
+      "description": "描述：打开工具盒，拿取工具盒中的十字螺丝刀，小型扳手，放置桌面左上角，关闭工具盒，按压扣紧盒盖。 动作：开合，拿取 ,放下， 按压",
+      "actions": [
+        "开合，拿取",
+        "放下， 按压"
+      ],
+      "actionText": "开合，拿取 ,放下， 按压",
+      "props": [
+        "收纳盒、文具用品（笔、尺子、橡皮）"
+      ],
+      "propText": "收纳盒、文具用品（笔、尺子、橡皮）",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-127",
+      "createdAt": "2026-07-20",
+      "scene": "客厅",
+      "name": "客厅_收纳箱药品取用_自定义条件_free_G",
+      "description": "描述：拿起放置药品的收纳箱，打开卡扣，取出碘伏，棉签，创可贴放置桌面上，按压扣合，将箱体推入至原位置。 动作：翻转，拿取，放下，按压，推",
+      "actions": [
+        "翻转，拿取，放下，按压，推"
+      ],
+      "actionText": "翻转，拿取，放下，按压，推",
+      "props": [
+        "药品箱，碘伏，棉签，创可贴"
+      ],
+      "propText": "药品箱，碘伏，棉签，创可贴",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-1005",
+      "createdAt": "2026-07-20",
+      "scene": "厨房",
+      "name": "厨房_胡萝卜擦丝_自定义条件_free_G",
+      "description": "描述：胡萝卜需要擦丝备用，取出胡萝卜，分别贴合擦丝器口匀速按压推拉擦取丝条，收集胡萝卜丝装盘，最后清理刀面残留食材残渣。 动作：抓取、贴合、按压、推拉、收集、清理",
+      "actions": [
+        "抓取、贴合、按压、推拉、收集、清理"
+      ],
+      "actionText": "抓取、贴合、按压、推拉、收集、清理",
+      "props": [
+        "擦丝器、胡萝卜、餐盘"
+      ],
+      "propText": "擦丝器、胡萝卜、餐盘",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-1140",
+      "createdAt": "2026-07-20",
+      "scene": "卧室",
+      "name": "卧室_礼品袋装饰_自定义条件_free_G",
+      "description": "描述：桌面上摆有装有玩偶的礼品袋、装有装饰摆件的密封袋，将礼品袋拉近，打开密封袋拿出摆件，胶已经提前粘在摆件上，夹起摆件按压在礼品袋上，将礼品袋推送至（右上角/左上角） 动作：推拉、按压、拿取",
+      "actions": [
+        "推拉、按压、拿取"
+      ],
+      "actionText": "推拉、按压、拿取",
+      "props": [
+        "礼品袋、玩偶、摆件、密封袋"
+      ],
+      "propText": "礼品袋、玩偶、摆件、密封袋",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
+    },
+    {
+      "id": "new-1180",
+      "createdAt": "2026-07-20",
+      "scene": "卧室",
+      "name": "卧室_收纳盒物品整理_自定义条件_free_G",
+      "description": "描述：收纳盒内物品杂乱，打开收纳盒将夹子、橡皮、笔、回形针、装订书钉、便签、订书机等物品放置书桌上（各类物品数量保持在2-4个），将不同物品在收纳盒中分区放置，盒装物品进行堆叠在一起，笔统一笔尖朝内并排排列摆放右侧 动作：取出、堆叠、对齐、归位",
+      "actions": [
+        "取出、堆叠、对齐、归位"
+      ],
+      "actionText": "取出、堆叠、对齐、归位",
+      "props": [
+        "夹子、橡皮、笔",
+        "收纳盒"
+      ],
+      "propText": "夹子、橡皮、笔,收纳盒",
+      "ready": true,
+      "windowStart": "",
+      "windowEnd": "",
+      "doneCount": 0,
+      "doneHours": 0,
+      "lastDone": "",
+      "peopleCount": 0,
+      "deviceCount": 0,
+      "donePeople": []
     }
   ],
   "scenes": [
@@ -11266,25 +11659,37 @@ window.TASK_LIBRARY = {
     "餐厅"
   ],
   "commonActions": [
-    "倾倒",
-    "按压",
-    "拿起",
-    "摆放",
-    "旋紧",
-    "舀取",
-    "装入",
-    "对准",
-    "放入",
-    "盖合",
-    "取出",
-    "折叠",
-    "插入",
-    "推回",
-    "搅拌",
-    "摇晃",
+    "拿，打开，推拉，翻转",
+    "组装、对齐、扣紧、封装、悬挂、归位",
+    "抓取、撕扯",
+    "涂抹、压实、投放",
+    "拿起、喷洒、擦拭、摆放",
+    "拿、摘、插、归位",
+    "按压、扣合、固定、检查",
+    "拿、理顺、归位",
+    "拿、放、插、入",
+    "整理、悬挂、排列、归位",
+    "扫、翻转、固定",
+    "拿、倾倒、冲洗、归位",
+    "拿、擦拭、分类、收纳",
+    "拿、倒、搅拌",
+    "划开、撕开、取出、压扁、堆叠",
+    "取、放、搅拌",
+    "取放，擦除，归位",
+    "打开、放入、理顺、合上、归位",
     "擦拭",
-    "整理",
-    "倒入",
-    "对齐"
+    "扫拢",
+    "卷起",
+    "系绑",
+    "扣住、拨动、取出、归位",
+    "抓住、插接、按压",
+    "握持、按压、喷洒、擦拭",
+    "取出、整理、挂起",
+    "拿去、擦拭、盖紧",
+    "打开，倾倒，夹",
+    "动作：取下、拧开、插入、拧紧、盖上",
+    "插接、扣合、旋紧、开盖",
+    "动作：撕拆、倒出、分装、扣盖",
+    "舀取、震实、旋紧、粘贴"
   ]
 };
