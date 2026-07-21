@@ -71,6 +71,9 @@ function readStore() {
   if (!Array.isArray(store.assignments)) store.assignments = [];
   if (!Array.isArray(store.events)) store.events = [];
   if (!store.libraries || typeof store.libraries !== "object") store.libraries = {};
+  if (store.libraries.deviceLibrary && !store.libraries.deviceLibrary.devices?.length) {
+    delete store.libraries.deviceLibrary;
+  }
   return store;
 }
 

@@ -187,7 +187,10 @@ function applyLibraryOverrides(libraries = {}) {
   if (libraries.taskLibrary && window.TASK_LIBRARY) Object.assign(window.TASK_LIBRARY, libraries.taskLibrary);
   if (libraries.propInventory && window.PROP_INVENTORY) Object.assign(window.PROP_INVENTORY, libraries.propInventory);
   if (libraries.locationLibrary && window.LOCATION_LIBRARY) Object.assign(window.LOCATION_LIBRARY, libraries.locationLibrary);
-  if (libraries.deviceLibrary && window.DEVICE_LIBRARY) Object.assign(window.DEVICE_LIBRARY, libraries.deviceLibrary);
+  if (libraries.deviceLibrary && window.DEVICE_LIBRARY) {
+    const devices = Array.isArray(libraries.deviceLibrary.devices) ? libraries.deviceLibrary.devices : [];
+    if (devices.length) Object.assign(window.DEVICE_LIBRARY, libraries.deviceLibrary);
+  }
   if (window.PROP_INVENTORY?.items) {
     localStorage.setItem("propInventory", JSON.stringify(window.PROP_INVENTORY.items));
   }
@@ -868,6 +871,9 @@ function collectorTaskCardHtml(assignment) {
   const task = taskById(assignment.taskId);
   const status = normalizeStatus(assignment.status);
   const devices = window.DEVICE_LIBRARY?.devices || [];
+  const deviceOptions = devices.length
+    ? devices.map((device) => `<option value="${escapeHtml(device.id)}" ${assignment.deviceId === device.id ? "selected" : ""}>${escapeHtml(device.id)}</option>`).join("")
+    : `<option value="" disabled>设备库暂无设备，请联系负责人更新设备库</option>`;
   return `
     <div class="collector-task-card">
       <div class="section-head">
@@ -883,7 +889,7 @@ function collectorTaskCardHtml(assignment) {
         <div class="account-grid">
           <select id="device-${escapeHtml(assignment.id)}">
             <option value="">选择今日使用设备号</option>
-            ${devices.map((device) => `<option value="${escapeHtml(device.id)}" ${assignment.deviceId === device.id ? "selected" : ""}>${escapeHtml(device.id)}</option>`).join("")}
+            ${deviceOptions}
           </select>
           <button class="primary-button" data-start-assignment="${escapeHtml(assignment.id)}">开始作业</button>
         </div>
