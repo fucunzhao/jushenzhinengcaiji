@@ -206,40 +206,44 @@ function formalCartStorageKey() {
   return `formalRequestCart:${accountState.user?.id || "guest"}`;
 }
 
-function formalCartIds() {
+function formalCartRows() {
   try {
-    return JSON.parse(localStorage.getItem(formalCartStorageKey()) || "[]").map(String);
+    const rows = JSON.parse(localStorage.getItem(formalCartStorageKey()) || "[]");
+    return Array.isArray(rows) ? rows.filter((row) => row && typeof row === "object" && row.taskId && row.taskName) : [];
   } catch {
     return [];
   }
 }
 
-function saveFormalCartIds(ids) {
-  localStorage.setItem(formalCartStorageKey(), JSON.stringify(Array.from(new Set(ids.map(String)))));
+function saveFormalCartRows(rows) {
+  localStorage.setItem(formalCartStorageKey(), JSON.stringify(rows));
 }
 
-function formalCartTasks() {
-  return formalCartIds().map((id) => taskById(id)).filter(Boolean);
+function addRowsToFormalCart(rows) {
+  const incoming = (rows || []).map((row) => ({
+    ...row,
+    uid: row.uid || `${row.taskId}-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+  }));
+  if (!incoming.length) throw new Error("请先生成申请行");
+  saveFormalCartRows([...formalCartRows(), ...incoming]);
+  renderAccountPanel();
 }
 
-function addTaskToFormalCart(taskId, render = true) {
+function selectTaskForFormalRequest(taskId, render = true) {
   const id = String(taskId || "");
   if (!id || !taskById(id)) return;
-  const ids = formalCartIds();
-  if (!ids.includes(id)) {
-    ids.push(id);
-    saveFormalCartIds(ids);
-  }
+  accountState.selectedTaskId = id;
+  window.__selectedTaskIdForAccount = id;
   if (render && accountState.user?.role === "trainer") renderAccountPanel();
 }
 
-function removeTaskFromFormalCart(taskId) {
-  saveFormalCartIds(formalCartIds().filter((id) => id !== String(taskId)));
+function removeRowFromFormalCart(uid) {
+  saveFormalCartRows(formalCartRows().filter((row) => row.uid !== String(uid)));
   renderAccountPanel();
 }
 
 function clearFormalCart() {
-  saveFormalCartIds([]);
+  saveFormalCartRows([]);
   renderAccountPanel();
 }
 
@@ -377,7 +381,7 @@ function initAccountSystem() {
   });
   window.addEventListener("formal-cart-add", (event) => {
     if (accountState.user?.role !== "trainer") return;
-    addTaskToFormalCart(event.detail?.taskId);
+    selectTaskForFormalRequest(event.detail?.taskId);
   });
 
   renderAccountPanel();
@@ -868,12 +872,11 @@ function assignmentFormHtml(collectors) {
 
 function formalRequestHtml(collectors, date) {
   const task = taskById(accountState.selectedTaskId || window.__selectedTaskIdForAccount);
-  const cartTasks = formalCartTasks();
+  const cartRows = formalCartRows();
   const count = Number(localStorage.getItem("requestCount") || 3);
   const requestDate = localStorage.getItem("requestDate") || date || todayString();
   const suffixPrefix = localStorage.getItem("requestSuffixPrefix") || `柳州${compactDate(requestDate)}`;
-  const requestTasks = cartTasks.length ? cartTasks : (task ? [task] : []);
-  const lockedTasks = requestTasks.filter((item) => taskLockedByOther(item.id, requestDate));
+  const lockedRows = cartRows.filter((row) => taskLockedByOther(row.taskId, row.date || requestDate));
   const collectorOptions = collectors.map((user) => (
     `<option value="${escapeHtml(user.id)}">${escapeHtml(collectorOptionLabel(user))}</option>`
   )).join("");
@@ -885,43 +888,46 @@ function formalRequestHtml(collectors, date) {
         <span>培训师用于把选中的基础任务快速生成正式登记表行，并按后缀提醒采集员别领错</span>
       </div>
       <div class="selected-task-box">
-        <b>申请购物车：${requestTasks.length} 个基础任务</b>
-        <span>先在任务库把要申请的任务加入待采/购物车，再统一生成正式登记表行和分发给采集员。</span>
-        ${task && !cartTasks.some((item) => item.id === task.id) ? `<button class="text-button" id="addSelectedToFormalCart">加入当前选中任务</button>` : ""}
-        ${cartTasks.length ? formalCartHtml(cartTasks, requestDate) : `<p class="mini">购物车为空。可先在任务库点击“加入待采”，或选择任务后点击“加入当前选中任务”。</p>`}
-        ${lockedTasks.length ? `<strong class="claim-alert blocked">以下任务今日已被其他培训师领取，不可重复申请：${lockedTasks.map((item) => escapeHtml(item.name)).join("；")}</strong>` : ""}
+        <b>${task ? escapeHtml(task.name) : "尚未选择基础任务"}</b>
+        <span>${task ? "先生成申请行，确认采集员、场地、房间后，再加入申请车。" : "请先在任务库选择一条要申请的基础任务"}</span>
       </div>
       <div class="request-controls">
         <label>申请日期<input id="requestDate" type="date" value="${escapeHtml(requestDate)}" /></label>
         <label>命名标识<input id="requestSuffixPrefix" value="${escapeHtml(suffixPrefix)}" placeholder="柳州0720" /></label>
         <label>申请条数<input id="requestCount" type="number" min="1" max="12" step="1" value="${count}" /></label>
         <button class="primary-button" id="refreshRequestRows">生成申请行</button>
-        <button class="text-button" id="copyFormalRows" ${lockedTasks.length ? "disabled" : ""}>复制正式登记表行</button>
+        <button class="text-button" id="addPreviewRowsToFormalCart">加入申请车</button>
+        <button class="text-button" id="copyFormalRows" ${lockedRows.length || !cartRows.length ? "disabled" : ""}>复制正式登记表行</button>
         <button class="text-button" id="copyClaimNotice">复制领取提醒</button>
         <button class="text-button" id="clearFormalCart">清空购物车</button>
-        <button class="primary-button" id="batchAssignRequests" ${lockedTasks.length ? "disabled" : ""}>按下方行发布给采集员</button>
+        <button class="primary-button" id="batchAssignRequests" ${lockedRows.length || !cartRows.length ? "disabled" : ""}>按申请车发布给采集员</button>
       </div>
       <div class="request-warning">
         <b>防领错规则</b>
-        <span>采集员只领取系统分配给自己的完整任务名，必须核对“柳州日期_序号”任务标识和指定场地房间；同一基础任务的不同序号要在不同环境完成。</span>
+        <span>申请车保存的是具体申请行。复制正式登记表、复制领取提醒、批量发布都以申请车为准。</span>
       </div>
+      <h4>待加入申请行</h4>
       <div class="formal-request-table" id="formalRequestRows">
-        ${requestRowsHtml(requestTasks, count, suffixPrefix, requestDate, collectorOptions)}
+        ${requestRowsHtml(task ? [task] : [], count, suffixPrefix, requestDate, collectorOptions, 0)}
       </div>
+      <h4>申请车：${cartRows.length} 行</h4>
+      ${formalCartHtml(cartRows, requestDate)}
+      ${lockedRows.length ? `<strong class="claim-alert blocked">申请车中存在今日已被其他培训师领取的任务，请移除后再复制或发布。</strong>` : ""}
     </div>
   `;
 }
 
-function formalCartHtml(tasks, requestDate) {
+function formalCartHtml(rows, requestDate) {
+  if (!rows.length) return `<p class="mini">申请车为空。请先生成申请行，再点击“加入申请车”。</p>`;
   return `
     <div class="formal-cart-list">
-      ${tasks.map((task, index) => {
-        const claim = claimForTask(task.id, requestDate);
-        const locked = taskLockedByOther(task.id, requestDate);
+      ${rows.map((row, index) => {
+        const claim = claimForTask(row.taskId, row.date || requestDate);
+        const locked = taskLockedByOther(row.taskId, row.date || requestDate);
         return `
           <div class="formal-cart-item ${locked ? "locked" : ""}">
-            <span><b>${index + 1}. ${escapeHtml(task.name)}</b>${claim ? `<em>${locked ? "他人已领取" : "今日已领取"}</em>` : ""}</span>
-            <button class="mini-button" data-remove-formal-cart="${escapeHtml(task.id)}">移除</button>
+            <span><b>${index + 1}. ${escapeHtml(row.taskName)}</b><em>${escapeHtml(row.collectorName || "待分配")} · ${escapeHtml(row.locationName || "待定")} / ${escapeHtml(row.room || "待定")}${claim ? ` · ${locked ? "他人已领取" : "今日已领取"}` : ""}</em></span>
+            <button class="mini-button" data-remove-formal-cart="${escapeHtml(row.uid)}">移除</button>
           </div>
         `;
       }).join("")}
@@ -929,7 +935,7 @@ function formalCartHtml(tasks, requestDate) {
   `;
 }
 
-function requestRowsHtml(tasks, count, suffixPrefix, requestDate, collectorOptions) {
+function requestRowsHtml(tasks, count, suffixPrefix, requestDate, collectorOptions, startIndex = 0) {
   const list = Array.isArray(tasks) ? tasks : (tasks ? [tasks] : []);
   if (!list.length) return `<p class="mini">请先把要申请的任务加入购物车。</p>`;
   let globalIndex = 0;
@@ -937,10 +943,11 @@ function requestRowsHtml(tasks, count, suffixPrefix, requestDate, collectorOptio
     const rooms = suggestedRoomsForTask(task, count);
     return Array.from({ length: count }, (_, index) => {
       globalIndex += 1;
-      const suffix = `${suffixPrefix}_${globalIndex}`;
-      const room = rooms[index] || allRoomChoices()[(globalIndex - 1) % Math.max(allRoomChoices().length, 1)] || {};
+      const displayIndex = startIndex + globalIndex;
+      const suffix = `${suffixPrefix}_${displayIndex}`;
+      const room = rooms[index] || allRoomChoices()[(displayIndex - 1) % Math.max(allRoomChoices().length, 1)] || {};
     return `
-      <div class="formal-request-row" data-request-index="${globalIndex - 1}" data-task-id="${escapeHtml(task.id)}">
+      <div class="formal-request-row" data-request-index="${displayIndex - 1}" data-task-id="${escapeHtml(task.id)}">
         <div>
           <b>${escapeHtml(requestedTaskName(task.name, suffix))}</b>
           <span>正式表：日期 / 任务编号 / 任务名称 / 下发状态，其余字段先留空</span>
@@ -1110,12 +1117,10 @@ function bindWorkspaceEvents() {
     if (room) room.innerHTML = roomOptions(event.target.value);
   });
   document.querySelector("#assignTaskBtn")?.addEventListener("click", assignTask);
-  document.querySelector("#addSelectedToFormalCart")?.addEventListener("click", () => {
-    addTaskToFormalCart(accountState.selectedTaskId || window.__selectedTaskIdForAccount);
-  });
+  document.querySelector("#addPreviewRowsToFormalCart")?.addEventListener("click", addPreviewRowsToFormalCart);
   document.querySelector("#clearFormalCart")?.addEventListener("click", clearFormalCart);
   document.querySelectorAll("[data-remove-formal-cart]").forEach((button) => {
-    button.addEventListener("click", () => removeTaskFromFormalCart(button.dataset.removeFormalCart));
+    button.addEventListener("click", () => removeRowFromFormalCart(button.dataset.removeFormalCart));
   });
   document.querySelector("#refreshRequestRows")?.addEventListener("click", refreshFormalRows);
   document.querySelector("#copyFormalRows")?.addEventListener("click", copyFormalRows);
@@ -1446,8 +1451,6 @@ function formalRequestConfig() {
 }
 
 function formalRequestRows() {
-  const task = taskById(accountState.selectedTaskId || window.__selectedTaskIdForAccount);
-  if (!task) return [];
   const config = formalRequestConfig();
   return Array.from(document.querySelectorAll(".formal-request-row")).map((row, index) => {
     const task = taskById(row.dataset.taskId || accountState.selectedTaskId || window.__selectedTaskIdForAccount);
@@ -1473,6 +1476,24 @@ function formalRequestRows() {
   }).filter(Boolean);
 }
 
+function cartRequestRows() {
+  return formalCartRows().map((row, index) => ({
+    ...row,
+    index: index + 1,
+    collectorName: row.collectorName || userName(row.collectorId) || "待分配",
+    locationName: row.locationName || locationName(row.locationId),
+  }));
+}
+
+function addPreviewRowsToFormalCart() {
+  const rows = formalRequestRows();
+  if (!rows.length) {
+    alert("请先选择基础任务并生成申请行");
+    return;
+  }
+  addRowsToFormalCart(rows);
+}
+
 function refreshFormalRows() {
   const config = formalRequestConfig();
   localStorage.setItem("requestDate", config.date);
@@ -1483,14 +1504,13 @@ function refreshFormalRows() {
   const collectorOptions = allCollectorUsers().map((user) => (
     `<option value="${escapeHtml(user.id)}">${escapeHtml(collectorOptionLabel(user))}</option>`
   )).join("");
-  const tasks = formalCartTasks();
   const selectedTask = taskById(accountState.selectedTaskId || window.__selectedTaskIdForAccount);
-  container.innerHTML = requestRowsHtml(tasks.length ? tasks : (selectedTask ? [selectedTask] : []), config.count, config.suffixPrefix, config.date, collectorOptions);
+  container.innerHTML = requestRowsHtml(selectedTask ? [selectedTask] : [], config.count, config.suffixPrefix, config.date, collectorOptions, formalCartRows().length);
   bindWorkspaceEvents();
 }
 
 function formalRowsTsv() {
-  const rows = formalRequestRows();
+  const rows = cartRequestRows();
   const header = ["日期", "任务编号", "任务名称", "下发状态", "领取人", "完成时间", "任务状态", "采集时长", "采集时长截图", "质检日期", "质检反馈", "合格条数"];
   const body = rows.map((row) => [
     row.date,
@@ -1510,7 +1530,7 @@ function formalRowsTsv() {
 }
 
 function claimNoticeText() {
-  const rows = formalRequestRows();
+  const rows = cartRequestRows();
   if (!rows.length) return "";
   return [
     "任务领取提醒：请只领取分配给自己的完整任务名，重点核对“柳州日期_序号”任务标识，领错会导致任务场景和登记表不匹配。",
@@ -1563,7 +1583,7 @@ async function ensureTaskClaim(rows, options = {}) {
 
 async function copyFormalRowsWithClaim() {
   try {
-    const rows = formalRequestRows();
+    const rows = cartRequestRows();
     const text = formalRowsTsv();
     await ensureTaskClaim(rows, { silent: true });
     copyText(text, "已锁定该任务并复制，可直接粘贴到柳州自变量工作表的正式任务登记与反馈表");
@@ -1579,8 +1599,8 @@ function copyClaimNotice() {
 
 async function batchAssignRequests() {
   try {
-    const rows = formalRequestRows();
-    if (!rows.length) throw new Error("请先选择基础任务并生成申请行");
+    const rows = cartRequestRows();
+    if (!rows.length) throw new Error("请先把申请行加入申请车");
     const missingCollector = rows.find((row) => !row.collectorId);
     if (missingCollector) throw new Error(`第 ${missingCollector.index} 行未选择采集员`);
     const notice = claimNoticeText();
