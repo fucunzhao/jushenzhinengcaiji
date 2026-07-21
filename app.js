@@ -380,7 +380,7 @@ function renderTasks() {
         <div class="meta-row">${tokens(task.actionText).slice(0, 5).map((item) => `<span class="badge">${item}</span>`).join("")}</div>
         <div class="card-actions">
           <button class="mini-button" data-detail="${task.id}">查看</button>
-          <button class="mini-button add" data-add="${task.id}" ${lockedByOther ? "disabled" : ""}>${lockedByOther ? "已被领取" : "加入待采"}</button>
+          <button class="mini-button add" data-add="${task.id}" ${lockedByOther ? "disabled" : ""}>${lockedByOther ? "已被领取" : "加入申请车"}</button>
         </div>
       </article>
     `;
@@ -444,7 +444,7 @@ function renderDetail(task) {
     <div class="detail-block"><b>适合且未做地点</b><div class="meta-row">${locInfo.notDone.map((item) => `<span class="badge warn">${item.label}</span>`).join("") || `<span class="badge done">所有适合地点都已做过</span>`}</div></div>
     <div class="detail-block"><b>已做地点</b><div class="meta-row">${locInfo.done.map((item) => `<span class="badge done">${item.label}</span>`).join("") || `<span class="mini">暂无精确地点记录</span>`}</div></div>
     ${stepPlan ? renderStepPlan(stepPlan) : ""}
-    <button class="primary-button" data-add="${task.id}" ${lockedByOther ? "disabled" : ""}>${lockedByOther ? "今日已被其他培训师领取" : "加入今日待采"}</button>
+    <button class="primary-button" data-add="${task.id}" ${lockedByOther ? "disabled" : ""}>${lockedByOther ? "今日已被其他培训师领取" : "加入申请车"}</button>
   `;
   openTaskDetailDrawer();
 }
@@ -606,6 +606,7 @@ function addToPlan(id) {
     qc: "",
   });
   savePlan();
+  window.dispatchEvent(new CustomEvent("formal-cart-add", { detail: { taskId: task.id } }));
   renderPlan();
   renderTasks();
 }

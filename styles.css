@@ -367,6 +367,46 @@ textarea {
   margin-top: 10px;
 }
 
+.formal-cart-list {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.formal-cart-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: white;
+  padding: 8px;
+}
+
+.formal-cart-item span {
+  min-width: 0;
+}
+
+.formal-cart-item b {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.formal-cart-item em {
+  display: inline-block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-style: normal;
+}
+
+.formal-cart-item.locked {
+  border-color: #efb8b8;
+  background: #fff7f7;
+}
+
 .formal-request-row {
   display: grid;
   grid-template-columns: minmax(260px, 1.6fr) minmax(130px, 0.7fr) minmax(160px, 0.8fr) minmax(150px, 0.8fr) minmax(120px, 0.6fr);
