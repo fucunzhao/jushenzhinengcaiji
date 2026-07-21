@@ -421,10 +421,21 @@ function startPolling() {
         accountState.libraries = libraries.libraries || {};
         applyLibraryOverrides(accountState.libraries);
         publishClaimsForTaskPool();
-        renderAccountPanel();
+        if (!accountPanelHasActiveFormField()) renderAccountPanel();
       })
       .catch(() => {});
   }, 15000);
+}
+
+function accountPanelHasActiveFormField() {
+  const panel = document.querySelector("#accountPanel");
+  const active = document.activeElement;
+  return Boolean(
+    panel &&
+    active &&
+    panel.contains(active) &&
+    active.matches?.("input, select, textarea, button")
+  );
 }
 
 function logout(render = true) {
@@ -1126,13 +1137,7 @@ function bindWorkspaceEvents() {
   document.querySelector("#copyFormalRows")?.addEventListener("click", copyFormalRows);
   document.querySelector("#copyClaimNotice")?.addEventListener("click", copyClaimNotice);
   document.querySelector("#batchAssignRequests")?.addEventListener("click", batchAssignRequests);
-  document.querySelectorAll(".request-location").forEach((select) => {
-    select.addEventListener("change", () => {
-      const row = select.closest(".formal-request-row");
-      const room = row?.querySelector(".request-room");
-      if (room) room.innerHTML = roomOptions(select.value);
-    });
-  });
+  bindRequestRowEvents();
   document.querySelector("#saveDailyDraft")?.addEventListener("click", saveDailyDraft);
   document.querySelector("#copyDailyReport")?.addEventListener("click", copyDailyReport);
   document.querySelectorAll("[data-start-assignment]").forEach((button) => {
@@ -1140,6 +1145,18 @@ function bindWorkspaceEvents() {
   });
   document.querySelectorAll("[data-complete-assignment]").forEach((button) => {
     button.addEventListener("click", () => completeAssignment(button.dataset.completeAssignment));
+  });
+}
+
+function bindRequestRowEvents() {
+  document.querySelectorAll(".request-location").forEach((select) => {
+    if (select.dataset.bound === "1") return;
+    select.dataset.bound = "1";
+    select.addEventListener("change", () => {
+      const row = select.closest(".formal-request-row");
+      const room = row?.querySelector(".request-room");
+      if (room) room.innerHTML = roomOptions(select.value);
+    });
   });
 }
 
@@ -1506,7 +1523,7 @@ function refreshFormalRows() {
   )).join("");
   const selectedTask = taskById(accountState.selectedTaskId || window.__selectedTaskIdForAccount);
   container.innerHTML = requestRowsHtml(selectedTask ? [selectedTask] : [], config.count, config.suffixPrefix, config.date, collectorOptions, formalCartRows().length);
-  bindWorkspaceEvents();
+  bindRequestRowEvents();
 }
 
 function formalRowsTsv() {

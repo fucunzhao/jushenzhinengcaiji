@@ -416,7 +416,7 @@ async function handleApi(req, res, pathname) {
 
   if (pathname === "/api/users" && req.method === "GET") {
     let users = store.users;
-    if (user.role === "trainer") users = users.filter((item) => item.id === user.id || item.trainerId === user.id);
+    if (user.role === "trainer") users = users.filter((item) => item.role === "collector" || item.role === "trainer" || item.id === user.id);
     if (user.role === "collector") users = users.filter((item) => item.id === user.id || item.id === user.trainerId);
     return send(res, 200, { users: users.map(publicUser) });
   }
@@ -529,7 +529,6 @@ async function handleApi(req, res, pathname) {
     if (!["owner", "manager", "trainer"].includes(user.role)) return sendError(res, 403, "没有分配任务权限");
     const collector = store.users.find((item) => item.id === body.collectorId && item.role === "collector");
     if (!collector) return sendError(res, 400, "采集员不存在");
-    if (user.role === "trainer" && collector.trainerId !== user.id) return sendError(res, 403, "只能分配给自己管理的采集员");
     const trainerId = user.role === "trainer" ? user.id : (body.trainerId || collector.trainerId || "");
     const conflict = taskClaimConflict(store, body.date, body.taskId, trainerId);
     if (conflict) {
