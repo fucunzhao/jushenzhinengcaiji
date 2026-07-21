@@ -488,8 +488,33 @@ function setupRoleSectionFolding() {
 
   const nav = document.createElement("div");
   nav.className = "role-module-nav";
-  nav.innerHTML = `<span>常用模块</span>`;
+  nav.innerHTML = `<span>快速切换</span>`;
   panel.querySelector(".dashboard-grid")?.after(nav);
+
+  const addNavButton = (title, onClick, active = false) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = active ? "active" : "";
+    button.textContent = title;
+    button.addEventListener("click", () => {
+      onClick();
+      nav.querySelectorAll("button").forEach((item) => item.classList.remove("active"));
+      button.classList.add("active");
+    });
+    nav.appendChild(button);
+    return button;
+  };
+
+  addNavButton("顶部", () => {
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, true);
+
+  const taskEntry = document.querySelector(".task-entry-card");
+  if (taskEntry) {
+    addNavButton("任务库", () => {
+      taskEntry.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }
 
   sections.forEach((section, index) => {
     const head = section.querySelector(".section-head");
@@ -522,17 +547,10 @@ function setupRoleSectionFolding() {
       localStorage.setItem(`sectionOpen:${accountState.user.role}:${title}`, details.open ? "1" : "0");
     });
 
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = details.open ? "active" : "";
-    button.textContent = title;
-    button.addEventListener("click", () => {
+    addNavButton(title, () => {
       details.open = true;
       details.scrollIntoView({ behavior: "smooth", block: "start" });
-      nav.querySelectorAll("button").forEach((item) => item.classList.remove("active"));
-      button.classList.add("active");
-    });
-    nav.appendChild(button);
+    }, false);
   });
 }
 
@@ -1198,11 +1216,12 @@ async function uploadLibrariesExcel(event) {
     applyLibraryOverrides(accountState.libraries);
     renderAccountPanel();
     const imported = [
-      `任务 ${payload.tasks.length} 条`,
-      `道具 ${payload.props.length} 条`,
-      `场地 ${payload.locations.length} 个`,
+      Object.hasOwn(payload, "tasks") ? `任务 ${payload.tasks.length} 条` : "",
+      Object.hasOwn(payload, "props") ? `道具 ${payload.props.length} 条` : "",
+      Object.hasOwn(payload, "locations") ? `场地 ${payload.locations.length} 个` : "",
+      Object.hasOwn(payload, "devices") ? `设备 ${payload.devices.length} 台` : "",
       `人员新增 ${result.userResult?.created || 0} 人，更新 ${result.userResult?.updated || 0} 人，跳过 ${result.userResult?.skipped || 0} 行`,
-    ].join("；");
+    ].filter(Boolean).join("；");
     alert(`基础库已更新：${imported}`);
   } catch (error) {
     alert(error.message);
