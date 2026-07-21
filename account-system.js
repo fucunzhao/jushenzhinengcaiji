@@ -131,9 +131,18 @@ function collectorUsers(trainerId = "") {
   ));
 }
 
+function allCollectorUsers() {
+  return accountState.users.filter((user) => user.role === "collector");
+}
+
 function userName(id) {
   const user = accountState.users.find((item) => item.id === id);
   return user?.realName || user?.username || "";
+}
+
+function collectorOptionLabel(user) {
+  const trainer = user.trainerId ? userName(user.trainerId) : "未绑定培训师";
+  return `${user.realName || user.username} / ${user.phone || "无手机号"} / ${trainer}`;
 }
 
 function locationName(id) {
@@ -484,15 +493,17 @@ function managerWorkspaceHtml(date) {
 
 function trainerWorkspaceHtml(date) {
   const myCollectors = collectorUsers(accountState.user.id);
+  const allCollectors = allCollectorUsers();
   const mine = accountState.assignments.filter((item) => item.trainerId === accountState.user.id && item.date === date);
   return `
     <div class="dashboard-grid">
       ${metricCard("我的采集员", `${myCollectors.length} 人`, "只显示自己负责管理的采集员")}
+      ${metricCard("可下发采集员", `${allCollectors.length} 人`, "下发任务时可选择所有已注册采集员")}
       ${metricCard("今日分配", `${mine.length} 条`, "培训师负责查找任务并分配到人")}
       ${metricCard("今日进度", progressText(mine), "实时追踪采集员开始、完成、未完成情况")}
     </div>
-    ${assignmentFormHtml(myCollectors)}
-    ${formalRequestHtml(myCollectors, date)}
+    ${assignmentFormHtml(allCollectors)}
+    ${formalRequestHtml(allCollectors, date)}
     ${trainerPropsBoardHtml(mine)}
     ${assignmentTableHtml("我的采集员进度", mine, { showActions: false })}
   `;
@@ -793,7 +804,7 @@ function assignmentFormHtml(collectors) {
         <input id="assignDate" type="date" value="${todayString()}" />
         <select id="assignCollector">
           <option value="">选择采集员</option>
-          ${collectors.map((user) => `<option value="${escapeHtml(user.id)}">${escapeHtml(user.realName)} / ${escapeHtml(user.phone)}</option>`).join("")}
+          ${collectors.map((user) => `<option value="${escapeHtml(user.id)}">${escapeHtml(collectorOptionLabel(user))}</option>`).join("")}
         </select>
         <select id="assignDevice">
           <option value="">设备可稍后由采集员到岗选择</option>
@@ -819,7 +830,7 @@ function formalRequestHtml(collectors, date) {
   const claim = task ? claimForTask(task.id, requestDate) : null;
   const lockedByOther = task ? taskLockedByOther(task.id, requestDate) : false;
   const collectorOptions = collectors.map((user) => (
-    `<option value="${escapeHtml(user.id)}">${escapeHtml(user.realName)} / ${escapeHtml(user.phone)}</option>`
+    `<option value="${escapeHtml(user.id)}">${escapeHtml(collectorOptionLabel(user))}</option>`
   )).join("");
 
   return `
@@ -1391,8 +1402,8 @@ function refreshFormalRows() {
   const container = document.querySelector("#formalRequestRows");
   if (!container) return;
   const rooms = suggestedRoomsForTask(task, config.count);
-  const collectorOptions = collectorUsers(accountState.user.id).map((user) => (
-    `<option value="${escapeHtml(user.id)}">${escapeHtml(user.realName)} / ${escapeHtml(user.phone)}</option>`
+  const collectorOptions = allCollectorUsers().map((user) => (
+    `<option value="${escapeHtml(user.id)}">${escapeHtml(collectorOptionLabel(user))}</option>`
   )).join("");
   container.innerHTML = requestRowsHtml(task, config.count, config.suffixPrefix, config.date, rooms, collectorOptions);
   bindWorkspaceEvents();
