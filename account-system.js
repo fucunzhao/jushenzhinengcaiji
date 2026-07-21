@@ -23,6 +23,68 @@ const STATUS_LABELS = {
   completed: "已完成",
 };
 
+function formFieldSelector() {
+  return 'input:not([type="file"]):not([type="password"]), select, textarea';
+}
+
+function draftKeyForField(field) {
+  if (!field) return "";
+  if (field.id) return `id:${field.id}`;
+  const requestRow = field.closest(".formal-request-row");
+  if (requestRow) {
+    const rowIndex = Array.from(requestRow.parentElement?.children || []).indexOf(requestRow);
+    const className = Array.from(field.classList).find((item) => item.startsWith("request-")) || field.tagName.toLowerCase();
+    return `request:${rowIndex}:${className}`;
+  }
+  const completeGrid = field.closest(".complete-grid");
+  if (completeGrid) {
+    const fieldIndex = Array.from(completeGrid.querySelectorAll(formFieldSelector())).indexOf(field);
+    return `complete:${fieldIndex}`;
+  }
+  return "";
+}
+
+function captureAccountFormDraft() {
+  const panel = document.querySelector("#accountPanel");
+  if (!panel || !accountState.user) return null;
+  const active = document.activeElement;
+  const activeKey = panel.contains(active) ? draftKeyForField(active) : "";
+  const values = {};
+  panel.querySelectorAll(formFieldSelector()).forEach((field) => {
+    if (field.readOnly || field.disabled) return;
+    const key = draftKeyForField(field);
+    if (!key) return;
+    values[key] = field.type === "checkbox" ? field.checked : field.value;
+  });
+  return {
+    values,
+    activeKey,
+    selectionStart: typeof active?.selectionStart === "number" ? active.selectionStart : null,
+    selectionEnd: typeof active?.selectionEnd === "number" ? active.selectionEnd : null,
+  };
+}
+
+function restoreAccountFormDraft(draft) {
+  if (!draft?.values) return;
+  const panel = document.querySelector("#accountPanel");
+  if (!panel) return;
+  let activeTarget = null;
+  panel.querySelectorAll(formFieldSelector()).forEach((field) => {
+    if (field.readOnly || field.disabled) return;
+    const key = draftKeyForField(field);
+    if (!key || !Object.hasOwn(draft.values, key)) return;
+    if (field.type === "checkbox") field.checked = Boolean(draft.values[key]);
+    else field.value = draft.values[key];
+    if (key === draft.activeKey) activeTarget = field;
+  });
+  if (activeTarget) {
+    activeTarget.focus({ preventScroll: true });
+    if (draft.selectionStart != null && typeof activeTarget.setSelectionRange === "function") {
+      activeTarget.setSelectionRange(draft.selectionStart, draft.selectionEnd ?? draft.selectionStart);
+    }
+  }
+}
+
 function api(path, options = {}) {
   return fetch(path, {
     ...options,
@@ -323,6 +385,7 @@ function logout(render = true) {
 function renderAccountPanel() {
   const shell = document.querySelector("#accountPanel");
   if (!shell) return;
+  const draft = captureAccountFormDraft();
   if (!accountState.user) {
     shell.innerHTML = loginHtml();
     bindAuthEvents();
@@ -350,6 +413,7 @@ function renderAccountPanel() {
   `;
   bindWorkspaceEvents();
   setupRoleSectionFolding();
+  restoreAccountFormDraft(draft);
 }
 
 function loginHtml() {
