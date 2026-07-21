@@ -1132,6 +1132,7 @@ function parseLibraryWorkbook(text) {
   const doc = new DOMParser().parseFromString(text, "text/html");
   const tables = Array.from(doc.querySelectorAll("table"));
   const byName = {};
+  const payload = {};
   tables.forEach((table) => {
     let name = table.dataset.sheet || table.querySelector("caption")?.textContent?.trim();
     const rows = tableToRows(table);
@@ -1143,9 +1144,8 @@ function parseLibraryWorkbook(text) {
     if (!name && ["id", "label", "city", "status"].every((key) => keys.includes(key))) name = "设备库";
     if (name) byName[name] = rows;
   });
-  return {
-    users: byName["人员库"] || [],
-    tasks: (byName["任务库"] || []).map((row) => ({
+  if (Object.hasOwn(byName, "人员库")) payload.users = byName["人员库"];
+  if (Object.hasOwn(byName, "任务库")) payload.tasks = (byName["任务库"] || []).map((row) => ({
       id: row.id,
       scene: row.scene,
       name: row.name,
@@ -1160,11 +1160,11 @@ function parseLibraryWorkbook(text) {
       doneHours: Number(row.doneHours || 0),
       lastDone: row.lastDone,
       ready: Boolean(row.actionText && row.propText),
-    })).filter((row) => row.id && row.name),
-    props: byName["道具库"] || [],
-    locations: byName["场地库"] || [],
-    devices: byName["设备库"] || [],
-  };
+    })).filter((row) => row.id && row.name);
+  if (Object.hasOwn(byName, "道具库")) payload.props = byName["道具库"];
+  if (Object.hasOwn(byName, "场地库")) payload.locations = byName["场地库"];
+  if (Object.hasOwn(byName, "设备库")) payload.devices = byName["设备库"];
+  return payload;
 }
 
 function fileToBase64(file) {

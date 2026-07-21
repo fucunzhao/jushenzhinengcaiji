@@ -232,10 +232,12 @@ function normalizeLibraryPayload(payload) {
       locations: Array.from(grouped.values()),
     };
   }
-  if (payload.devices) {
+  if (Object.hasOwn(payload, "devices")) {
+    const devices = (Array.isArray(payload.devices) ? payload.devices : []).filter((item) => item.id || item.label);
+    if (!devices.length) return libraries;
     libraries.deviceLibrary = {
       updatedAt: now().slice(0, 10),
-      devices: (Array.isArray(payload.devices) ? payload.devices : []).filter((item) => item.id || item.label),
+      devices,
     };
   }
   return libraries;
