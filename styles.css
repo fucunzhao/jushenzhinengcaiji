@@ -540,6 +540,53 @@ body {
   text-align: right;
 }
 
+.location-device-card {
+  grid-column: 1 / -1;
+}
+
+.location-device-bars {
+  display: grid;
+  gap: 9px;
+}
+
+.location-device-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 1.1fr) minmax(120px, 0.9fr) minmax(180px, 2fr) 58px;
+  gap: 10px;
+  align-items: center;
+  font-size: 12px;
+}
+
+.location-device-row span,
+.location-device-row em {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.location-device-row em {
+  color: var(--muted);
+  font-style: normal;
+}
+
+.location-device-row div {
+  height: 10px;
+  border-radius: 999px;
+  background: #edf1ed;
+  overflow: hidden;
+}
+
+.location-device-row i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #365f8d;
+}
+
+.location-device-row b {
+  text-align: right;
+}
+
 textarea {
   width: 100%;
   border: 1px solid var(--line);
@@ -1929,6 +1976,15 @@ input:focus, select:focus {
 
   .trainer-bar {
     grid-template-columns: 72px 1fr 42px;
+  }
+
+  .location-device-row {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .location-device-row b {
+    text-align: left;
   }
 
   .section-summary::after {

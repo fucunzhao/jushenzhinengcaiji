@@ -578,6 +578,7 @@ function managerDataCockpitHtml(date) {
         ${weeklyBarChartHtml(week)}
         ${weeklyLineChartHtml(week)}
         ${trainerDistributionHtml(day)}
+        ${locationDeviceHoursHtml(day)}
       </div>
     </section>
   `;
@@ -695,6 +696,37 @@ function trainerDistributionHtml(assignments) {
       <div class="cockpit-card-head"><b>培训师任务分布</b><span>${trainers.length} 人</span></div>
       <div class="trainer-bars">
         ${trainers.map((item) => `<div class="trainer-bar"><span>${escapeHtml(item.name)}</span><div><i style="width:${Math.max(4, (item.total / max) * 100)}%"></i></div><b>${item.completed}/${item.total}</b></div>`).join("") || `<div class="empty">暂无培训师数据</div>`}
+      </div>
+    </div>
+  `;
+}
+
+function locationDeviceHoursHtml(assignments) {
+  const groups = new Map();
+  assignments.forEach((item) => {
+    const location = locationName(item.locationId) || "未填地址";
+    const device = item.deviceId || "未选设备";
+    const hours = Number(item.effectiveHours || 0);
+    const key = `${location}||${device}`;
+    const current = groups.get(key) || { location, device, hours: 0, count: 0 };
+    current.hours += hours;
+    current.count += 1;
+    groups.set(key, current);
+  });
+  const rows = Array.from(groups.values()).sort((a, b) => b.hours - a.hours || b.count - a.count);
+  const max = Math.max(...rows.map((item) => item.hours), 1);
+  return `
+    <div class="cockpit-card location-device-card">
+      <div class="cockpit-card-head"><b>采集地址 × 设备时长</b><span>${rows.length} 组</span></div>
+      <div class="location-device-bars">
+        ${rows.map((item) => `
+          <div class="location-device-row">
+            <span>${escapeHtml(item.location)}</span>
+            <em>${escapeHtml(item.device)}</em>
+            <div><i style="width:${Math.max(4, (item.hours / max) * 100)}%"></i></div>
+            <b>${item.hours.toFixed(1)}h</b>
+          </div>
+        `).join("") || `<div class="empty">暂无地址和设备时长数据</div>`}
       </div>
     </div>
   `;
