@@ -318,6 +318,228 @@ body {
   margin-bottom: 8px;
 }
 
+.manager-cockpit {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.cockpit-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.cockpit-head h2 {
+  margin: 0;
+}
+
+.cockpit-head > span {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.cockpit-kpis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.cockpit-kpi,
+.cockpit-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.cockpit-kpi {
+  padding: 13px;
+  display: grid;
+  gap: 4px;
+}
+
+.cockpit-kpi span,
+.cockpit-kpi em,
+.cockpit-card-head span {
+  color: var(--muted);
+  font-style: normal;
+  font-size: 12px;
+}
+
+.cockpit-kpi strong {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.cockpit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.cockpit-card {
+  padding: 14px;
+  min-height: 260px;
+  display: grid;
+  gap: 12px;
+  align-content: start;
+}
+
+.cockpit-card-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.donut-wrap {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 18px;
+  align-items: center;
+}
+
+.status-donut {
+  width: 150px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(var(--green) 0 var(--done), #d9a441 var(--done) calc(var(--done) + var(--working)), #d7ddd8 calc(var(--done) + var(--working)) 360deg);
+  position: relative;
+}
+
+.status-donut::after {
+  content: "";
+  position: absolute;
+  inset: 32px;
+  border-radius: 50%;
+  background: var(--panel);
+}
+
+.donut-legend {
+  display: grid;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.legend {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.legend.done {
+  background: var(--green);
+}
+
+.legend.working {
+  background: #d9a441;
+}
+
+.legend.assigned {
+  background: #d7ddd8;
+}
+
+.bar-chart {
+  height: 190px;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  align-items: end;
+}
+
+.bar-item {
+  height: 100%;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+  gap: 5px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.bar-item span {
+  align-self: end;
+  border-radius: 6px 6px 2px 2px;
+  background: linear-gradient(180deg, var(--green), #8fbc9d);
+}
+
+.bar-item b {
+  color: var(--text);
+}
+
+.line-chart {
+  width: 100%;
+  height: 160px;
+  border-bottom: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.line-labels {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.line-labels span {
+  display: grid;
+  gap: 3px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.line-labels b {
+  color: var(--text);
+  font-size: 12px;
+}
+
+.trainer-bars {
+  display: grid;
+  gap: 10px;
+}
+
+.trainer-bar {
+  display: grid;
+  grid-template-columns: 86px 1fr 48px;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+}
+
+.trainer-bar span {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.trainer-bar div {
+  height: 10px;
+  border-radius: 999px;
+  background: #edf1ed;
+  overflow: hidden;
+}
+
+.trainer-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--green);
+}
+
+.trainer-bar b {
+  text-align: right;
+}
+
 textarea {
   width: 100%;
   border: 1px solid var(--line);
@@ -1472,8 +1694,13 @@ input:focus, select:focus {
   }
 
   .dashboard-grid,
-  .report-grid {
+  .report-grid,
+  .cockpit-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cockpit-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .request-controls,
@@ -1667,6 +1894,8 @@ input:focus, select:focus {
   .complete-grid,
   .dashboard-grid,
   .report-grid,
+  .cockpit-grid,
+  .cockpit-kpis,
   .assignment-row,
   .section-summary,
   .request-controls,
@@ -1675,6 +1904,15 @@ input:focus, select:focus {
   .status-list > div,
   .deadline-row {
     grid-template-columns: 1fr;
+  }
+
+  .donut-wrap {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .trainer-bar {
+    grid-template-columns: 72px 1fr 42px;
   }
 
   .section-summary::after {

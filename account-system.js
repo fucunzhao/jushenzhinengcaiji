@@ -546,18 +546,157 @@ function ownerWorkspaceHtml(date) {
 }
 
 function managerWorkspaceHtml(date) {
+  return managerDataCockpitHtml(date);
+}
+
+function managerDataCockpitHtml(date) {
   const day = assignmentsForDate(date);
+  const week = weekSeries(date);
+  const status = countByStatus(day);
+  const dayHours = totalEffectiveHours(day);
+  const activeDevices = new Set(day.map((item) => item.deviceId).filter(Boolean)).size;
+  const activeCollectors = new Set(day.map((item) => item.collectorId).filter(Boolean)).size;
+  const incomplete = day.filter((item) => normalizeStatus(item.status) !== "completed").length;
   return `
-    <div class="dashboard-grid">
-      ${metricCard("日报填写", "汇总今日设备、人员、有效时长、完成条数", "项目经理负责对外日报和内部日报口径")}
-      ${metricCard("培训师截止检查", trainerDeadlineSummary(day), "检查培训师是否按规定时间完成领取、分配、跟进")}
-      ${metricCard("异常任务", `${day.filter((item) => normalizeStatus(item.status) !== "completed").length} 条待处理`, "重点盯未开始、作业中、未全部完成")}
+    <section class="manager-cockpit" aria-label="项目经理数据座舱">
+      <div class="cockpit-head">
+        <div>
+          <p class="eyebrow">项目经理</p>
+          <h2>数据座舱</h2>
+        </div>
+        <span>${escapeHtml(date)}</span>
+      </div>
+      <div class="cockpit-kpis">
+        ${cockpitKpi("今日任务", day.length, "条")}
+        ${cockpitKpi("有效时长", dayHours.toFixed(1), "小时")}
+        ${cockpitKpi("使用设备", activeDevices, "台")}
+        ${cockpitKpi("到岗采集员", activeCollectors, "人")}
+        ${cockpitKpi("待处理", incomplete, "条")}
+      </div>
+      <div class="cockpit-grid">
+        ${statusDonutHtml(status)}
+        ${weeklyBarChartHtml(week)}
+        ${weeklyLineChartHtml(week)}
+        ${trainerDistributionHtml(day)}
+      </div>
+    </section>
+  `;
+}
+
+function cockpitKpi(label, value, unit) {
+  return `<div class="cockpit-kpi"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong><em>${escapeHtml(unit)}</em></div>`;
+}
+
+function totalEffectiveHours(assignments) {
+  return assignments.reduce((sum, item) => sum + Number(item.effectiveHours || 0), 0);
+}
+
+function parseDateValue(dateText) {
+  const [year, month, day] = String(dateText || todayString()).split("-").map(Number);
+  return new Date(year || new Date().getFullYear(), (month || 1) - 1, day || 1);
+}
+
+function dateTextFromValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function addDays(dateText, offset) {
+  const date = parseDateValue(dateText);
+  date.setDate(date.getDate() + offset);
+  return dateTextFromValue(date);
+}
+
+function shortDateLabel(dateText) {
+  return String(dateText || "").slice(5).replace("-", "/");
+}
+
+function weekSeries(date) {
+  return Array.from({ length: 7 }, (_, index) => {
+    const day = addDays(date, index - 6);
+    const assignments = assignmentsForDate(day);
+    const status = countByStatus(assignments);
+    return {
+      date: day,
+      label: shortDateLabel(day),
+      total: assignments.length,
+      completed: status.completed,
+      working: status.working,
+      assigned: status.assigned,
+      hours: totalEffectiveHours(assignments),
+    };
+  });
+}
+
+function statusDonutHtml(status) {
+  const total = Math.max(status.assigned + status.working + status.completed, 1);
+  const completedDeg = Math.round((status.completed / total) * 360);
+  const workingDeg = Math.round((status.working / total) * 360);
+  return `
+    <div class="cockpit-card">
+      <div class="cockpit-card-head"><b>今日状态占比</b><span>${status.completed}/${total} 完成</span></div>
+      <div class="donut-wrap">
+        <div class="status-donut" style="--done:${completedDeg}deg;--working:${workingDeg}deg"></div>
+        <div class="donut-legend">
+          <span><i class="legend done"></i>已完成 ${status.completed}</span>
+          <span><i class="legend working"></i>作业中 ${status.working}</span>
+          <span><i class="legend assigned"></i>已分配 ${status.assigned}</span>
+        </div>
+      </div>
     </div>
-    ${dailyReportHtml(day, date)}
-    ${trainerDeadlineHtml(day)}
-    ${libraryMaintenanceHtml()}
-    ${accountCreationHtml()}
-    ${assignmentTableHtml("今日任务进度表", day, { showActions: false })}
+  `;
+}
+
+function weeklyBarChartHtml(series) {
+  const max = Math.max(...series.map((item) => item.total), 1);
+  return `
+    <div class="cockpit-card">
+      <div class="cockpit-card-head"><b>近7日任务量</b><span>柱状图</span></div>
+      <div class="bar-chart">
+        ${series.map((item) => `<div class="bar-item"><span style="height:${Math.max(6, (item.total / max) * 100)}%"></span><b>${item.total}</b><em>${item.label}</em></div>`).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function weeklyLineChartHtml(series) {
+  const max = Math.max(...series.map((item) => item.hours), 1);
+  const points = series.map((item, index) => {
+    const x = 8 + index * 14;
+    const y = 88 - (item.hours / max) * 76;
+    return `${x},${y}`;
+  }).join(" ");
+  return `
+    <div class="cockpit-card">
+      <div class="cockpit-card-head"><b>近7日有效时长</b><span>折线图</span></div>
+      <svg class="line-chart" viewBox="0 0 100 100" preserveAspectRatio="none" role="img" aria-label="近7日有效时长折线图">
+        <polyline points="${points}" fill="none" stroke="var(--green)" stroke-width="3" vector-effect="non-scaling-stroke"></polyline>
+        ${series.map((item, index) => {
+          const x = 8 + index * 14;
+          const y = 88 - (item.hours / max) * 76;
+          return `<circle cx="${x}" cy="${y}" r="2.4" fill="var(--green)"></circle>`;
+        }).join("")}
+      </svg>
+      <div class="line-labels">${series.map((item) => `<span>${item.label}<b>${item.hours.toFixed(1)}h</b></span>`).join("")}</div>
+    </div>
+  `;
+}
+
+function trainerDistributionHtml(assignments) {
+  const trainers = trainerUsers().map((trainer) => {
+    const mine = assignments.filter((item) => item.trainerId === trainer.id);
+    return { name: trainer.realName || trainer.username, total: mine.length, completed: countByStatus(mine).completed };
+  }).sort((a, b) => b.total - a.total);
+  const max = Math.max(...trainers.map((item) => item.total), 1);
+  return `
+    <div class="cockpit-card">
+      <div class="cockpit-card-head"><b>培训师任务分布</b><span>${trainers.length} 人</span></div>
+      <div class="trainer-bars">
+        ${trainers.map((item) => `<div class="trainer-bar"><span>${escapeHtml(item.name)}</span><div><i style="width:${Math.max(4, (item.total / max) * 100)}%"></i></div><b>${item.completed}/${item.total}</b></div>`).join("") || `<div class="empty">暂无培训师数据</div>`}
+      </div>
+    </div>
   `;
 }
 
