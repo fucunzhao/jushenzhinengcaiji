@@ -151,12 +151,15 @@ function locationName(id) {
 
 function roomOptions(locationId, selectedRoom = "") {
   const location = (window.LOCATION_LIBRARY?.locations || []).find((item) => item.id === locationId);
+  if (!location?.rooms?.length) return `<option value="">请选择房间</option>`;
   return (location?.rooms || []).map((room) => (
     `<option value="${escapeHtml(room)}" ${room === selectedRoom ? "selected" : ""}>${escapeHtml(room)}</option>`
   )).join("");
 }
 
 function locationOptions(selectedId = "") {
+  const locations = window.LOCATION_LIBRARY?.locations || [];
+  if (!locations.length) return `<option value="">暂无采集场地</option>`;
   return (window.LOCATION_LIBRARY?.locations || []).map((location) => (
     `<option value="${escapeHtml(location.id)}" ${location.id === selectedId ? "selected" : ""}>${escapeHtml(location.name)}</option>`
   )).join("");
@@ -1038,7 +1041,6 @@ function assignmentFormHtml(collectors) {
   const task = taskById(accountState.selectedTaskId || window.__selectedTaskIdForAccount);
   const locations = window.LOCATION_LIBRARY?.locations || [];
   const devices = window.DEVICE_LIBRARY?.devices || [];
-  const firstLocation = firstLocationId();
   const claim = task ? claimForTask(task.id) : null;
   const lockedByOther = task ? taskLockedByOther(task.id) : false;
   return `
@@ -1054,20 +1056,27 @@ function assignmentFormHtml(collectors) {
         ${task ? propChecklistHtml(task) : ""}
       </div>
       <div class="register-grid">
-        <input id="assignDate" type="date" value="${todayString()}" />
-        <select id="assignCollector">
-          <option value="">选择采集员</option>
-          ${collectors.map((user) => `<option value="${escapeHtml(user.id)}">${escapeHtml(collectorOptionLabel(user))}</option>`).join("")}
-        </select>
-        <select id="assignDevice">
-          <option value="">设备可稍后由采集员到岗选择</option>
-          ${devices.map((device) => `<option value="${escapeHtml(device.id)}">${escapeHtml(device.id)}</option>`).join("")}
-        </select>
-        <select id="assignLocation">
-          ${locations.map((location) => `<option value="${escapeHtml(location.id)}">${escapeHtml(location.name)}</option>`).join("")}
-        </select>
-        <select id="assignRoom">${roomOptions(firstLocation)}</select>
-        <input id="assignHours" type="number" min="0.1" step="0.1" value="1" placeholder="计划小时" />
+        <label class="field-label">分配日期<input id="assignDate" type="date" value="${todayString()}" /></label>
+        <label class="field-label">采集员
+          <select id="assignCollector">
+            <option value="">请选择采集员</option>
+            ${collectors.map((user) => `<option value="${escapeHtml(user.id)}">${escapeHtml(collectorOptionLabel(user))}</option>`).join("")}
+          </select>
+        </label>
+        <label class="field-label">设备
+          <select id="assignDevice">
+            <option value="">设备可稍后由采集员到岗选择</option>
+            ${devices.map((device) => `<option value="${escapeHtml(device.id)}">${escapeHtml(device.id)}</option>`).join("")}
+          </select>
+        </label>
+        <label class="field-label">采集场地
+          <select id="assignLocation">
+            <option value="">请选择采集场地</option>
+            ${locations.map((location) => `<option value="${escapeHtml(location.id)}">${escapeHtml(location.name)}</option>`).join("")}
+          </select>
+        </label>
+        <label class="field-label">房间<select id="assignRoom">${roomOptions("")}</select></label>
+        <label class="field-label">计划小时<input id="assignHours" type="number" min="0.1" step="0.1" value="1" placeholder="填写计划小时" /></label>
         <button class="primary-button" id="assignTaskBtn" ${lockedByOther ? "disabled" : ""}>分配任务</button>
       </div>
     </div>
@@ -1624,6 +1633,10 @@ async function assignTask() {
     if (taskLockedByOther(task.id, document.querySelector("#assignDate").value)) throw new Error("该任务今日已被其他培训师领取，不能重复分配");
     const collectorId = document.querySelector("#assignCollector").value;
     if (!collectorId) throw new Error("请选择采集员");
+    const locationId = document.querySelector("#assignLocation").value;
+    const room = document.querySelector("#assignRoom").value;
+    if (!locationId) throw new Error("请选择采集场地");
+    if (!room) throw new Error("请选择房间");
     const collector = accountState.users.find((user) => user.id === collectorId);
     const payload = {
       date: document.querySelector("#assignDate").value,
@@ -1633,8 +1646,8 @@ async function assignTask() {
       collectorId,
       trainerId: collector?.trainerId || accountState.user.id,
       deviceId: document.querySelector("#assignDevice").value,
-      locationId: document.querySelector("#assignLocation").value,
-      room: document.querySelector("#assignRoom").value,
+      locationId,
+      room,
       plannedHours: document.querySelector("#assignHours").value,
     };
     await ensureTaskClaim([{
