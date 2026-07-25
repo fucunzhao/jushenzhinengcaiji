@@ -353,39 +353,22 @@ function renderTasks() {
   renderSummary();
   el.taskList.innerHTML = tasks.map((task) => {
     const selected = task.id === state.selectedTaskId ? "selected" : "";
-    const locInfo = taskLocationInfo(task);
     const claim = claimForTask(task);
     const lockedByOther = taskLockedByOther(task);
-    const readyBadge = taskIsReady(task)
-      ? `<span class="badge ok">道具明确</span>`
-      : `<span class="badge warn">待补道具</span>`;
-    const doneBadge = task.doneCount
-      ? `<span class="badge done">已做过 ${task.doneCount}次</span>`
-      : `<span class="badge warn">近期未做</span>`;
+    const statusText = claim
+      ? (lockedByOther ? "他人已领" : "今日已领")
+      : (task.doneCount ? "已做过" : "未做过");
     return `
-      <article class="task-card ${selected} ${task.doneCount ? "done-card" : ""} ${claim ? "claimed-card" : ""} ${lockedByOther ? "locked-card" : ""}" data-id="${task.id}" data-task-id="${task.id}">
-        ${task.doneCount ? `<div class="done-ribbon">已做过</div>` : ""}
-        ${claim ? `<div class="claim-ribbon">${lockedByOther ? "今日已被他人领取" : "今日已领取"}</div>` : ""}
-        <div class="card-head">
-          <div>
-            <div class="mini">#${task.id} · ${task.scene || "未标场景"}</div>
-            <h3 class="task-title">${task.name}</h3>
-          </div>
-          ${readyBadge}
+      <article class="task-card task-label-card ${selected} ${task.doneCount ? "done-card" : ""} ${claim ? "claimed-card" : ""} ${lockedByOther ? "locked-card" : ""}" data-id="${task.id}" data-task-id="${task.id}">
+        <div class="task-label-main">
+          <b class="task-title">${task.name}</b>
+          <span>#${task.id} · ${statusText}</span>
         </div>
-        <p class="desc">${task.description || "暂无任务描述"}</p>
-        <div class="meta-row">
-          ${doneBadge}
-          ${task.doneCount ? `<span class="badge">最近 ${task.lastDone || "有记录"}</span>` : ""}
-          ${task.doneHours ? `<span class="badge">${task.doneHours}h</span>` : ""}
-          <span class="badge ${locInfo.notDone.length ? "warn" : "done"}">未做地点 ${locInfo.notDone.length}</span>
-          ${claim ? `<span class="badge claimed">今日领取：${claim.trainerName || "培训师"}</span>` : ""}
-          ${isTrainingFriendly(task) ? `<span class="badge ok">培训友好</span>` : ""}
-        </div>
-        <div class="meta-row">${tokens(task.actionText).slice(0, 5).map((item) => `<span class="badge">${item}</span>`).join("")}</div>
         <div class="card-actions">
           <button class="mini-button" data-detail="${task.id}">查看</button>
-          <button class="mini-button add" data-add="${task.id}" ${lockedByOther ? "disabled" : ""}>${lockedByOther ? "已被领取" : "预选任务"}</button>
+          <button class="mini-button add" data-add="${task.id}" ${lockedByOther ? "disabled" : ""}>预选</button>
+          <button class="mini-button" data-task-action="assign" data-task-action-id="${task.id}" ${lockedByOther ? "disabled" : ""}>分配</button>
+          <button class="mini-button" data-task-action="register" data-task-action-id="${task.id}" ${lockedByOther ? "disabled" : ""}>登记</button>
         </div>
       </article>
     `;
@@ -465,7 +448,11 @@ function renderDetail(task) {
     <div class="detail-block"><b>适合且未做地点</b><div class="meta-row">${locInfo.notDone.map((item) => `<span class="badge warn">${item.label}</span>`).join("") || `<span class="badge done">所有适合地点都已做过</span>`}</div></div>
     <div class="detail-block"><b>已做地点</b><div class="meta-row">${locInfo.done.map((item) => `<span class="badge done">${item.label}</span>`).join("") || `<span class="mini">暂无精确地点记录</span>`}</div></div>
     ${stepPlan ? renderStepPlan(stepPlan) : ""}
-    <button class="primary-button" data-add="${task.id}" ${lockedByOther ? "disabled" : ""}>${lockedByOther ? "今日已被其他培训师领取" : "预选任务"}</button>
+    <div class="detail-actions">
+      <button class="primary-button" data-add="${task.id}" ${lockedByOther ? "disabled" : ""}>${lockedByOther ? "今日已被其他培训师领取" : "预选任务"}</button>
+      <button class="text-button" data-task-action="assign" data-task-action-id="${task.id}" ${lockedByOther ? "disabled" : ""}>分配任务</button>
+      <button class="text-button" data-task-action="register" data-task-action-id="${task.id}" ${lockedByOther ? "disabled" : ""}>加入任务登记</button>
+    </div>
   `;
   openTaskDetailDrawer();
 }
@@ -632,6 +619,19 @@ function addToPlan(id) {
   renderTasks();
 }
 
+function sendTaskToAccountModule(id, target) {
+  const task = library.tasks.find((item) => item.id === id);
+  if (!task) return;
+  if (target !== "detail" && taskLockedByOther(task)) {
+    alert("该任务今日已被其他培训师领取，不能重复接取");
+    return;
+  }
+  state.selectedTaskId = id;
+  window.__selectedTaskIdForAccount = id;
+  window.dispatchEvent(new CustomEvent("task-module-action", { detail: { taskId: id, target } }));
+  closeTaskLibrary();
+}
+
 function exportCsv() {
   const rows = [[
     "日期", "任务编号", "任务名称", "下发状态", "使用设备编号", "领取人", "跟踪培训师",
@@ -742,6 +742,7 @@ function bindEvents() {
     }
     const detailButton = event.target.closest("[data-detail]");
     const addButton = event.target.closest("[data-add]");
+    const taskActionButton = event.target.closest("[data-task-action]");
     const card = event.target.closest(".task-card");
     if (detailButton) {
       event.preventDefault();
@@ -759,6 +760,13 @@ function bindEvents() {
       event.stopPropagation();
       openTaskLibrary();
       addToPlan(addButton.dataset.add);
+      return;
+    }
+    if (taskActionButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      sendTaskToAccountModule(taskActionButton.dataset.taskActionId, taskActionButton.dataset.taskAction);
+      renderTasks();
       return;
     }
     if (card) {

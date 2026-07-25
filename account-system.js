@@ -383,6 +383,16 @@ function initAccountSystem() {
     if (accountState.user?.role !== "trainer") return;
     selectTaskForFormalRequest(event.detail?.taskId);
   });
+  window.addEventListener("task-module-action", (event) => {
+    if (accountState.user?.role !== "trainer") {
+      document.querySelector("#accountPanel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    const taskId = event.detail?.taskId;
+    const target = event.detail?.target === "register" ? "任务登记模块" : "选择任务 / 分配任务";
+    selectTaskForFormalRequest(taskId);
+    setTimeout(() => openAccountSection(target), 0);
+  });
 
   renderAccountPanel();
   if (accountState.token) {
@@ -595,7 +605,7 @@ function sectionDefaultState(role, title, index) {
   const highUse = {
     owner: ["全项目任务进度", "账号开通模板"],
     manager: ["日报填写", "培训师截止检查", "今日任务进度表"],
-    trainer: ["查找并分配任务", "正式任务登记", "今日道具准备清单", "我的采集员进度"],
+    trainer: ["选择任务 / 分配任务", "任务登记模块", "今日道具准备清单", "我的采集员进度"],
     collector: ["我的任务"],
   };
   const supportUse = {
@@ -644,7 +654,7 @@ function setupRoleSectionFolding() {
     panel.scrollIntoView({ behavior: "smooth", block: "start" });
   }, true);
 
-  const taskEntry = document.querySelector(".task-entry-card");
+  const taskEntry = document.querySelector(".task-library-entry");
   if (taskEntry) {
     addNavButton("任务库", () => {
       taskEntry.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -687,6 +697,18 @@ function setupRoleSectionFolding() {
       details.scrollIntoView({ behavior: "smooth", block: "start" });
     }, false);
   });
+}
+
+function openAccountSection(title) {
+  const panel = document.querySelector("#accountPanel");
+  if (!panel) return;
+  const section = Array.from(panel.querySelectorAll(".section-collapsible")).find((item) => item.dataset.title === title);
+  if (!section) {
+    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+  section.open = true;
+  section.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function progressText(assignments) {
@@ -851,8 +873,8 @@ function assignmentFormHtml(collectors) {
   return `
     <div class="board-section">
       <div class="section-head">
-        <h3>查找并分配任务</h3>
-        <span>先在任务库点击任务卡片，再在这里分配给采集员</span>
+        <h3>选择任务 / 分配任务</h3>
+        <span>从任务库点击“分配”后，在这里确认采集员、设备、场地和房间</span>
       </div>
       <div class="selected-task-box">
         <b>${task ? escapeHtml(task.name) : "尚未选择任务"}</b>
@@ -895,8 +917,8 @@ function formalRequestHtml(collectors, date) {
   return `
     <div class="board-section">
       <div class="section-head">
-        <h3>正式任务登记 / 批量申请</h3>
-        <span>培训师用于把选中的基础任务快速生成正式登记表行，并按后缀提醒采集员别领错</span>
+        <h3>任务登记模块</h3>
+        <span>集中查看申请车、登记正式任务、复制领取提醒和批量申请</span>
       </div>
       <div class="selected-task-box">
         <b>${task ? escapeHtml(task.name) : "尚未选择基础任务"}</b>
