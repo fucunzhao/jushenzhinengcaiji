@@ -1255,8 +1255,8 @@ input:focus, select:focus {
 
 .task-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 8px;
+  grid-template-columns: 1fr;
+  gap: 7px;
   overflow: auto;
   padding-bottom: 4px;
   min-height: 0;
@@ -1272,12 +1272,14 @@ input:focus, select:focus {
   gap: 8px;
   min-height: 0;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .task-label-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
 }
 
 .task-label-main {
@@ -1352,6 +1354,7 @@ input:focus, select:focus {
   font-size: 14px;
   line-height: 1.35;
   overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .badge {
@@ -1404,15 +1407,16 @@ input:focus, select:focus {
 }
 
 .card-actions {
-  margin-top: auto;
+  margin-top: 0;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
+  justify-content: flex-end;
 }
 
 .mini-button {
   padding: 6px 8px;
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-width: 58px;
   font-size: 12px;
 }
@@ -1880,6 +1884,18 @@ input:focus, select:focus {
 
   .task-list {
     max-height: 48vh;
+  }
+
+  .task-label-card {
+    grid-template-columns: 1fr;
+  }
+
+  .card-actions {
+    justify-content: stretch;
+  }
+
+  .mini-button {
+    flex: 1 1 64px;
   }
 
   .account-head,
