@@ -13,47 +13,18 @@
         <h1>柳州任务库工作台</h1>
       </div>
       <div class="top-actions">
-        <button class="icon-button" id="resetFilters" title="重置筛选" aria-label="重置筛选">↺</button>
         <button class="primary-button" id="exportPlan">导出填报清单</button>
       </div>
     </header>
 
     <main class="layout">
-      <aside class="filters" aria-label="任务筛选">
-        <section>
-          <label for="searchInput">搜索任务</label>
-          <input id="searchInput" type="search" placeholder="任务编号、名称、道具、动作；支持多关键词模糊搜索" />
-        </section>
-
-        <section>
-          <div class="section-title">场景</div>
-          <div class="chip-grid" id="sceneFilters"></div>
-        </section>
-
-        <section>
-          <div class="section-title">优先级</div>
-          <label class="check-row"><input type="checkbox" id="doneOnly" /> 只看已做过</label>
-          <label class="check-row"><input type="checkbox" id="readyOnly" /> 道具和动作明确</label>
-          <label class="check-row"><input type="checkbox" id="unusedOnly" /> 最近未完成</label>
-          <label class="check-row"><input type="checkbox" id="hasWindow" /> 有任务周期</label>
-        </section>
-
-        <section>
-          <div class="section-title">常见动作</div>
-          <div class="chip-grid" id="actionFilters"></div>
-        </section>
-      </aside>
-
       <section class="workspace task-library-entry" aria-label="任务库入口">
-        <div class="task-entry-card">
-          <div>
-            <p class="eyebrow">任务库</p>
-            <h2>打开任务选择器</h2>
-            <p class="mini">任务卡片已收起到二级界面，点击后再搜索、筛选、查看详情和选择任务。</p>
-          </div>
-          <button class="primary-button" id="openTaskLibrary">打开任务库</button>
+        <div class="task-module-tile">
+          <button class="task-module-button" id="openTaskLibrary" title="打开任务库" aria-label="打开任务库">
+            <span>⌕</span>
+          </button>
         </div>
-        <div class="summary compact-summary" id="summary"></div>
+        <div class="summary compact-summary module-hidden" id="summary"></div>
       </section>
 
       <aside class="planner" aria-label="今日待采">
@@ -114,20 +85,27 @@
           </div>
           <button class="text-button" id="closeTaskLibrary">关闭</button>
         </header>
-        <div class="toolbar task-library-toolbar">
-          <div class="tabs" role="tablist" aria-label="任务视图">
-            <button class="tab active" data-view="recommended">推荐</button>
-            <button class="tab" data-view="all">全部</button>
-            <button class="tab" data-view="training">培训</button>
-            <button class="tab" data-view="done">做过</button>
-            <button class="tab" data-view="pending">待验证</button>
+        <div class="task-library-controls">
+          <input id="searchInput" type="search" placeholder="搜索任务编号、名称、道具、动作；支持多关键词模糊搜索" />
+          <div class="task-filter-row">
+            <div class="tabs compact-tabs" role="tablist" aria-label="完成状态筛选">
+              <button class="tab active" data-view="all">全部</button>
+              <button class="tab" data-view="done">已做过</button>
+              <button class="tab" data-view="undone">未做过</button>
+            </div>
+            <select id="locationFilter" aria-label="场地适配筛选">
+              <option value="all">全部场地可选任务</option>
+              <option value="xyy-5-2304">5栋2304可选任务</option>
+              <option value="xyy-9-801">9栋0801可选任务</option>
+            </select>
+            <select id="sortSelect" aria-label="排序方式">
+              <option value="recommend">推荐排序</option>
+              <option value="scene">按场景</option>
+              <option value="hours">累计时长高优先</option>
+              <option value="unused">未做过优先</option>
+            </select>
+            <button class="text-button" id="resetFilters">重置</button>
           </div>
-          <select id="sortSelect" aria-label="排序方式">
-            <option value="recommend">推荐排序</option>
-            <option value="scene">按场景</option>
-            <option value="hours">累计时长高优先</option>
-            <option value="unused">未完成优先</option>
-          </select>
         </div>
         <div class="task-library-content">
           <div class="task-list" id="taskList"></div>

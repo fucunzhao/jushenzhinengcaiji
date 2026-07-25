@@ -628,10 +628,11 @@ h2 {
 
 .layout {
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr) 360px;
+  grid-template-columns: 92px minmax(0, 1fr);
   gap: 14px;
   padding: 14px;
   height: calc(100vh - 76px);
+  align-items: start;
 }
 
 .filters, .planner, .workspace {
@@ -710,9 +711,11 @@ input:focus, select:focus {
 
 .task-library-entry {
   gap: 12px;
+  overflow: visible;
 }
 
-.task-entry-card {
+.task-entry-card,
+.task-module-tile {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
@@ -722,6 +725,37 @@ input:focus, select:focus {
   justify-content: space-between;
   gap: 12px;
   box-shadow: var(--shadow);
+}
+
+.task-module-tile {
+  justify-content: flex-start;
+  padding: 12px;
+}
+
+.task-module-button {
+  width: 64px;
+  height: 64px;
+  flex: 0 0 64px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--green);
+  color: white;
+  border-color: var(--green);
+}
+
+.task-module-button span {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.task-module-tile h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.module-hidden {
+  display: none;
 }
 
 .compact-summary {
@@ -779,6 +813,25 @@ input:focus, select:focus {
   padding: 12px 14px;
   border-bottom: 1px solid var(--line);
   background: #fbfcfa;
+}
+
+.task-library-controls {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--line);
+  background: #fbfcfa;
+}
+
+.task-filter-row {
+  display: grid;
+  grid-template-columns: minmax(210px, auto) minmax(180px, 220px) minmax(160px, 190px) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.compact-tabs {
+  flex-wrap: nowrap;
 }
 
 .task-library-content {
@@ -1460,9 +1513,16 @@ input:focus, select:focus {
     scroll-margin-top: 18px;
   }
 
-  .task-entry-card {
+  .task-entry-card,
+  .task-module-tile {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .task-module-button {
+    width: 100%;
+    height: 54px;
+    flex-basis: auto;
   }
 
   .compact-summary {
@@ -1482,6 +1542,10 @@ input:focus, select:focus {
   .task-library-toolbar {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .task-filter-row {
+    grid-template-columns: 1fr;
   }
 
   .task-library-content {

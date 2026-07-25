@@ -10,7 +10,8 @@ const state = {
   query: "",
   scene: "全部",
   action: "",
-  view: "recommended",
+  view: "all",
+  locationFilter: "all",
   selectedTaskId: "",
   sort: "recommend",
   doneOnly: false,
@@ -37,6 +38,7 @@ const el = {
   readyOnly: document.querySelector("#readyOnly"),
   unusedOnly: document.querySelector("#unusedOnly"),
   hasWindow: document.querySelector("#hasWindow"),
+  locationFilter: document.querySelector("#locationFilter"),
   summary: document.querySelector("#summary"),
   taskFold: document.querySelector("#taskLibraryFold"),
   taskFoldSummary: document.querySelector("#taskFoldSummary"),
@@ -223,6 +225,11 @@ function taskLocationInfo(task) {
   };
 }
 
+function taskHasOpenRoomInLocation(task, locationId) {
+  if (!locationId || locationId === "all") return true;
+  return taskLocationInfo(task).notDone.some((option) => option.locationId === locationId);
+}
+
 function taskIsReady(task) {
   return Boolean(task.actionText && task.propText);
 }
@@ -265,16 +272,9 @@ function filteredTasks() {
   let tasks = [...library.tasks];
   const queryTerms = searchTerms(state.query);
   if (queryTerms.length) tasks = tasks.filter((task) => taskMatchesQuery(task, state.query));
-  if (state.scene !== "全部") tasks = tasks.filter((task) => task.scene === state.scene);
-  if (state.action) tasks = tasks.filter((task) => task.actionText.includes(state.action));
-  if (state.doneOnly) tasks = tasks.filter((task) => task.doneCount > 0);
-  if (state.readyOnly) tasks = tasks.filter(taskIsReady);
-  if (state.unusedOnly) tasks = tasks.filter((task) => !task.doneCount);
-  if (state.hasWindow) tasks = tasks.filter((task) => task.windowStart || task.windowEnd);
-  if (state.view === "recommended") tasks = tasks.filter(taskIsReady);
+  if (state.locationFilter !== "all") tasks = tasks.filter((task) => taskHasOpenRoomInLocation(task, state.locationFilter));
   if (state.view === "done") tasks = tasks.filter((task) => task.doneCount > 0);
-  if (state.view === "pending") tasks = tasks.filter((task) => !taskIsReady(task));
-  if (state.view === "training") tasks = tasks.filter(isTrainingFriendly);
+  if (state.view === "undone") tasks = tasks.filter((task) => !task.doneCount);
 
   tasks.sort((a, b) => {
     if (queryTerms.length) {
@@ -315,6 +315,7 @@ function renderDefaultDevice() {
 }
 
 function renderChips() {
+  if (!el.scenes || !el.actions) return;
   const sceneList = ["全部", ...library.scenes];
   el.scenes.innerHTML = sceneList.map((scene) => (
     `<button class="chip ${scene === state.scene ? "active" : ""}" data-scene="${scene}">${scene}</button>`
@@ -666,25 +667,25 @@ function bindEvents() {
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeTaskLibrary();
   });
-  el.search.addEventListener("input", (event) => {
+  el.search?.addEventListener("input", (event) => {
     state.query = event.target.value;
     renderTasks();
   });
-  el.scenes.addEventListener("click", (event) => {
+  el.scenes?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-scene]");
     if (!button) return;
     state.scene = button.dataset.scene;
     renderChips();
     renderTasks();
   });
-  el.actions.addEventListener("click", (event) => {
+  el.actions?.addEventListener("click", (event) => {
     const button = event.target.closest("[data-action]");
     if (!button) return;
     state.action = state.action === button.dataset.action ? "" : button.dataset.action;
     renderChips();
     renderTasks();
   });
-  [el.doneOnly, el.readyOnly, el.unusedOnly, el.hasWindow].forEach((input) => {
+  [el.doneOnly, el.readyOnly, el.unusedOnly, el.hasWindow].filter(Boolean).forEach((input) => {
     input.addEventListener("change", () => {
       state[input.id] = input.checked;
       renderTasks();
@@ -698,6 +699,10 @@ function bindEvents() {
   }));
   el.sort.addEventListener("change", (event) => {
     state.sort = event.target.value;
+    renderTasks();
+  });
+  el.locationFilter?.addEventListener("change", (event) => {
+    state.locationFilter = event.target.value;
     renderTasks();
   });
   document.body.addEventListener("click", (event) => {
@@ -793,14 +798,11 @@ function bindEvents() {
   });
   el.exportPlan.addEventListener("click", exportCsv);
   el.reset.addEventListener("click", () => {
-    Object.assign(state, { query: "", scene: "全部", action: "", doneOnly: false, readyOnly: false, unusedOnly: false, hasWindow: false, sort: "recommend" });
-    el.search.value = "";
-    el.doneOnly.checked = false;
-    el.readyOnly.checked = false;
-    el.unusedOnly.checked = false;
-    el.hasWindow.checked = false;
+    Object.assign(state, { query: "", view: "all", locationFilter: "all", sort: "recommend" });
+    if (el.search) el.search.value = "";
+    if (el.locationFilter) el.locationFilter.value = "all";
+    el.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === "all"));
     el.sort.value = "recommend";
-    renderChips();
     renderTasks();
   });
 }
