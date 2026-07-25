@@ -628,10 +628,10 @@ h2 {
 
 .layout {
   display: grid;
-  grid-template-columns: 92px minmax(0, 1fr);
+  grid-template-columns: repeat(2, 116px);
   gap: 14px;
   padding: 14px;
-  height: calc(100vh - 76px);
+  height: auto;
   align-items: start;
 }
 
@@ -709,20 +709,26 @@ input:focus, select:focus {
   overflow: hidden;
 }
 
+.module-launchpad {
+  align-content: start;
+}
+
+.module-entry,
 .task-library-entry {
   gap: 12px;
   overflow: visible;
 }
 
 .task-entry-card,
-.task-module-tile {
+.task-module-tile,
+.module-tile {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
-  padding: 14px;
+  padding: 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   gap: 12px;
   box-shadow: var(--shadow);
 }
@@ -733,10 +739,11 @@ input:focus, select:focus {
 }
 
 .task-module-button {
-  width: 64px;
-  height: 64px;
-  flex: 0 0 64px;
+  width: 90px;
+  height: 90px;
+  flex: 0 0 90px;
   display: grid;
+  gap: 6px;
   place-items: center;
   border-radius: 8px;
   background: var(--green);
@@ -745,13 +752,19 @@ input:focus, select:focus {
 }
 
 .task-module-button span {
-  font-size: 32px;
+  font-size: 30px;
   line-height: 1;
 }
 
-.task-module-tile h2 {
-  margin: 0 0 4px;
-  font-size: 18px;
+.task-module-button b {
+  font-size: 13px;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.plan-module-button {
+  background: #365f8d;
+  border-color: #365f8d;
 }
 
 .module-hidden {
@@ -768,14 +781,16 @@ input:focus, select:focus {
   overflow: hidden;
 }
 
-.task-library-modal {
+.task-library-modal,
+.planner-modal {
   position: fixed;
   inset: 0;
   z-index: 40;
   display: none;
 }
 
-.task-library-modal.open {
+.task-library-modal.open,
+.planner-modal.open {
   display: block;
 }
 
@@ -796,6 +811,20 @@ input:focus, select:focus {
   background: var(--bg);
   box-shadow: 0 24px 70px rgba(16, 24, 20, 0.24);
   overflow: hidden;
+}
+
+.planner-page {
+  position: absolute;
+  inset: 22px;
+  max-width: 920px;
+  margin: 0 auto;
+  min-height: 0;
+  box-shadow: 0 24px 70px rgba(16, 24, 20, 0.24);
+}
+
+.planner-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .task-library-page-head {
@@ -1414,7 +1443,7 @@ input:focus, select:focus {
 
 @media (max-width: 1180px) {
   .layout {
-    grid-template-columns: 230px minmax(0, 1fr);
+    grid-template-columns: repeat(2, 116px);
   }
 
   .dashboard-grid,
@@ -1427,8 +1456,7 @@ input:focus, select:focus {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .planner {
-    grid-column: 1 / -1;
+  .planner-page {
     min-height: 320px;
   }
 }
@@ -1446,7 +1474,7 @@ input:focus, select:focus {
 
   .layout {
     height: auto;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .summary {
@@ -1521,8 +1549,14 @@ input:focus, select:focus {
 
   .task-module-button {
     width: 100%;
-    height: 54px;
+    height: 72px;
     flex-basis: auto;
+  }
+
+  .planner-page {
+    inset: 0;
+    max-width: none;
+    border-radius: 0;
   }
 
   .compact-summary {

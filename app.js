@@ -46,6 +46,10 @@ const el = {
   taskLibraryModal: document.querySelector("#taskLibraryModal"),
   closeTaskLibrary: document.querySelector("#closeTaskLibrary"),
   closeTaskLibraryBackdrop: document.querySelector("#closeTaskLibraryBackdrop"),
+  openTodayPlan: document.querySelector("#openTodayPlan"),
+  todayPlanModal: document.querySelector("#todayPlanModal"),
+  closeTodayPlan: document.querySelector("#closeTodayPlan"),
+  closeTodayPlanBackdrop: document.querySelector("#closeTodayPlanBackdrop"),
   taskDetailDrawer: document.querySelector("#taskDetailDrawer"),
   closeTaskDetail: document.querySelector("#closeTaskDetail"),
   taskList: document.querySelector("#taskList"),
@@ -400,6 +404,7 @@ function setupTaskLibraryFold() {
 
 function openTaskLibrary() {
   if (!el.taskLibraryModal) return;
+  closeTodayPlan();
   el.taskLibraryModal.classList.add("open");
   el.taskLibraryModal.setAttribute("aria-hidden", "false");
   document.body.classList.add("modal-open");
@@ -409,6 +414,21 @@ function closeTaskLibrary() {
   if (!el.taskLibraryModal) return;
   el.taskLibraryModal.classList.remove("open", "detail-open");
   el.taskLibraryModal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+}
+
+function openTodayPlan() {
+  if (!el.todayPlanModal) return;
+  closeTaskLibrary();
+  el.todayPlanModal.classList.add("open");
+  el.todayPlanModal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+}
+
+function closeTodayPlan() {
+  if (!el.todayPlanModal) return;
+  el.todayPlanModal.classList.remove("open");
+  el.todayPlanModal.setAttribute("aria-hidden", "true");
   document.body.classList.remove("modal-open");
 }
 
@@ -663,9 +683,15 @@ function bindEvents() {
   el.openTaskLibrary?.addEventListener("click", openTaskLibrary);
   el.closeTaskLibrary?.addEventListener("click", closeTaskLibrary);
   el.closeTaskLibraryBackdrop?.addEventListener("click", closeTaskLibrary);
+  el.openTodayPlan?.addEventListener("click", openTodayPlan);
+  el.closeTodayPlan?.addEventListener("click", closeTodayPlan);
+  el.closeTodayPlanBackdrop?.addEventListener("click", closeTodayPlan);
   el.closeTaskDetail?.addEventListener("click", closeTaskDetailDrawer);
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") closeTaskLibrary();
+    if (event.key === "Escape") {
+      closeTaskLibrary();
+      closeTodayPlan();
+    }
   });
   el.search?.addEventListener("input", (event) => {
     state.query = event.target.value;

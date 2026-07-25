@@ -17,23 +17,39 @@
       </div>
     </header>
 
-    <main class="layout">
-      <section class="workspace task-library-entry" aria-label="任务库入口">
-        <div class="task-module-tile">
+    <main class="layout module-launchpad">
+      <section class="module-entry task-library-entry" aria-label="任务库入口">
+        <div class="module-tile">
           <button class="task-module-button" id="openTaskLibrary" title="打开任务库" aria-label="打开任务库">
             <span>⌕</span>
+            <b>任务库</b>
           </button>
         </div>
         <div class="summary compact-summary module-hidden" id="summary"></div>
       </section>
 
-      <aside class="planner" aria-label="今日待采">
+      <section class="module-entry today-plan-entry" aria-label="今日待采入口">
+        <div class="module-tile">
+          <button class="task-module-button plan-module-button" id="openTodayPlan" title="打开今日待采" aria-label="打开今日待采">
+            <span>☑</span>
+            <b>今日待采</b>
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <div class="planner-modal" id="todayPlanModal" aria-hidden="true">
+      <div class="task-library-backdrop" id="closeTodayPlanBackdrop"></div>
+      <aside class="planner planner-page" aria-label="今日待采">
         <div class="planner-head">
           <div>
             <p class="eyebrow">今日待采</p>
             <h2>任务领取与填报</h2>
           </div>
-          <button class="text-button" id="clearPlan">清空</button>
+          <div class="planner-actions">
+            <button class="text-button" id="clearPlan">清空</button>
+            <button class="text-button" id="closeTodayPlan">关闭</button>
+          </div>
         </div>
 
         <div class="plan-controls">
@@ -73,7 +89,7 @@
 
 
       </aside>
-    </main>
+    </div>
 
     <div class="task-library-modal" id="taskLibraryModal" aria-hidden="true">
       <div class="task-library-backdrop" id="closeTaskLibraryBackdrop"></div>
