@@ -269,6 +269,7 @@ function roomMatchesTask(task, room) {
   if (text.includes("客厅")) return room === "客厅";
   if (text.includes("卧室")) return room.startsWith("卧室");
   if (text.includes("厕所") || text.includes("卫生间")) return room.includes("卫生间") || room.includes("厕所");
+  if (text.includes("阳台")) return room === "阳台";
   return true;
 }
 

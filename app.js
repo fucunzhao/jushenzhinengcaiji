@@ -201,6 +201,8 @@ function sceneMatchesRoom(scene, room) {
   if (scene.includes("厨房")) return room === "厨房";
   if (scene.includes("餐厅")) return room === "餐厅";
   if (scene.includes("卧室")) return room.startsWith("卧室");
+  if (scene.includes("厕所") || scene.includes("卫生间")) return room.includes("卫生间") || room.includes("厕所");
+  if (scene.includes("阳台")) return room === "阳台";
   return true;
 }
 
