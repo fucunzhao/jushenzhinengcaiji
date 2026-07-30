@@ -931,30 +931,32 @@ function libraryStatusHtml() {
 
 function libraryMaintenanceHtml() {
   if (!["owner", "manager"].includes(accountState.user.role)) return "";
-  const tasks = window.TASK_LIBRARY?.tasks?.length || 0;
-  const props = window.PROP_INVENTORY?.items?.length || 0;
-  const locations = window.LOCATION_LIBRARY?.locations?.length || 0;
+  const libraries = libraryMaintenanceItems();
   return `
     <div class="board-section">
       <div class="section-head">
         <h3>基础库维护中心</h3>
-        <span>下载当前人员库、任务库、道具库、场地库，修改后上传更新后台数据库</span>
+        <span>各基础库独立下载、独立上传，修改时只影响对应库</span>
       </div>
       <div class="library-maintenance">
-        <div class="status-list">
-          <div><b>人员库</b><span>${accountState.users.length} 人。新增人员需填写账号、姓名、手机号、角色；新账号默认密码可填在 initialPassword。</span></div>
-          <div><b>任务库</b><span>${tasks} 条。任务编号 id 不变则更新，新增 id 则追加。</span></div>
-          <div><b>道具库</b><span>${props} 项。按 category 分类，name 为道具名。</span></div>
-          <div><b>场地库</b><span>${locations} 个场地。rooms 可用顿号或逗号分隔多个房间。</span></div>
-        </div>
-        <div class="library-actions">
-          <button class="primary-button" id="downloadLibraries">下载当前库 Excel</button>
-          <label class="upload-button">上传修改后的 Excel<input id="uploadLibraries" type="file" accept=".xls,.html,.htm,.csv,.txt" /></label>
-          <span class="mini">建议用下载的模板修改后直接上传；如 Excel 提示格式不匹配，选择“是”继续打开即可。</span>
+        <div class="library-card-grid">
+          ${libraries.map((item) => `
+            <div class="library-card">
+              <div>
+                <b>${escapeHtml(item.title)}</b>
+                <strong>${escapeHtml(item.countText)}</strong>
+                <span>${escapeHtml(item.note)}</span>
+              </div>
+              <div class="library-actions">
+                <button class="primary-button small-button" data-download-library="${escapeHtml(item.kind)}">下载模板</button>
+                <label class="upload-button small-upload">上传更新<input data-upload-library="${escapeHtml(item.kind)}" type="file" accept=".xls,.html,.htm,.csv,.txt" /></label>
+              </div>
+            </div>
+          `).join("")}
         </div>
         <div class="request-warning">
           <b>上传前检查</b>
-          <span>不要删除表头；采集员行必须填写负责培训师姓名或手机号；任务库里的 id、name、scene、propText 建议保留。</span>
+          <span>不要删除表头；建议从对应卡片下载模板后修改再上传。系统会拒绝空模板，防止把某个库误清空。</span>
         </div>
       </div>
     </div>
@@ -1329,6 +1331,12 @@ function bindWorkspaceEvents() {
   document.querySelector("#uploadAccountTemplate")?.addEventListener("change", uploadAccountTemplate);
   document.querySelector("#downloadLibraries")?.addEventListener("click", downloadLibrariesExcel);
   document.querySelector("#uploadLibraries")?.addEventListener("change", uploadLibrariesExcel);
+  document.querySelectorAll("[data-download-library]").forEach((button) => {
+    button.addEventListener("click", () => downloadSingleLibraryExcel(button.dataset.downloadLibrary));
+  });
+  document.querySelectorAll("[data-upload-library]").forEach((input) => {
+    input.addEventListener("change", uploadSingleLibraryExcel);
+  });
   document.querySelector("#assignLocation")?.addEventListener("change", (event) => {
     const room = document.querySelector("#assignRoom");
     if (room) room.innerHTML = roomOptions(event.target.value);
@@ -1448,6 +1456,59 @@ function currentLibraryRows() {
   return { users, tasks, props, locations, devices };
 }
 
+const LIBRARY_CONFIG = {
+  users: {
+    title: "人员库",
+    sheet: "人员库",
+    payloadKey: "users",
+    filename: "人员库维护",
+    fields: ["username", "realName", "phone", "role", "trainerName", "trainerPhone", "status", "initialPassword"],
+    note: "维护员工账号、真实姓名、手机号、角色和采集员所属培训师。",
+  },
+  tasks: {
+    title: "任务库",
+    sheet: "任务库",
+    payloadKey: "tasks",
+    filename: "任务库维护",
+    fields: ["id", "scene", "name", "description", "actionText", "propText", "windowStart", "windowEnd", "doneCount", "doneHours", "lastDone"],
+    note: "维护任务编号、名称、场景、动作、道具和已做过记录。",
+  },
+  props: {
+    title: "道具库",
+    sheet: "道具库",
+    payloadKey: "props",
+    filename: "道具库维护",
+    fields: ["category", "name"],
+    note: "维护现有道具清单，用于选任务后自动判断需添置道具。",
+  },
+  locations: {
+    title: "场地库",
+    sheet: "场地库",
+    payloadKey: "locations",
+    filename: "场地库维护",
+    fields: ["id", "name", "type", "rooms"],
+    note: "维护采集地址和房间/场景，rooms 可用顿号或逗号分隔。",
+  },
+  devices: {
+    title: "设备库",
+    sheet: "设备库",
+    payloadKey: "devices",
+    filename: "设备库维护",
+    fields: ["id", "label", "city", "status"],
+    note: "维护企业设备编号，供采集员到岗后下拉选择。",
+  },
+};
+
+function libraryMaintenanceItems() {
+  const rows = currentLibraryRows();
+  return Object.entries(LIBRARY_CONFIG).map(([kind, config]) => ({
+    kind,
+    title: config.title,
+    note: config.note,
+    countText: `${rows[kind]?.length || 0} 条`,
+  }));
+}
+
 function downloadLibrariesExcel() {
   const rows = currentLibraryRows();
   const html = `
@@ -1474,6 +1535,25 @@ function downloadLibrariesExcel() {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+function downloadSingleLibraryExcel(kind) {
+  const config = LIBRARY_CONFIG[kind];
+  if (!config) return;
+  const rows = currentLibraryRows()[kind] || [];
+  const html = `
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <style>table{border-collapse:collapse;margin-bottom:24px}caption{font-weight:bold;text-align:left;padding:8px 0}td,th{border:1px solid #999;padding:4px 8px;mso-number-format:"\\@";}.tip{color:#666}</style>
+      </head>
+      <body>
+        <p class="tip">${escapeHtml(config.note)}</p>
+        ${tableHtml(config.sheet, config.fields, rows)}
+      </body>
+    </html>
+  `;
+  downloadHtmlExcel(`${config.filename}_${todayString()}.xls`, html);
 }
 
 function downloadHtmlExcel(filename, html) {
@@ -1604,6 +1684,35 @@ async function uploadLibrariesExcel(event) {
       `人员新增 ${result.userResult?.created || 0} 人，更新 ${result.userResult?.updated || 0} 人，跳过 ${result.userResult?.skipped || 0} 行`,
     ].filter(Boolean).join("；");
     alert(`基础库已更新：${imported}`);
+  } catch (error) {
+    alert(error.message);
+  } finally {
+    event.target.value = "";
+  }
+}
+
+async function uploadSingleLibraryExcel(event) {
+  const file = event.target.files?.[0];
+  const kind = event.target.dataset.uploadLibrary;
+  const config = LIBRARY_CONFIG[kind];
+  if (!file || !config) return;
+  try {
+    const text = await file.text();
+    if (!text.includes("<table")) throw new Error("请上传从系统下载的对应基础库 Excel 模板；暂不支持直接解析普通 xlsx 文件");
+    const parsed = parseLibraryWorkbook(text);
+    if (!Object.hasOwn(parsed, config.payloadKey)) throw new Error(`模板中没有找到${config.title}表`);
+    const rows = parsed[config.payloadKey] || [];
+    if (!rows.length) throw new Error(`${config.title}模板中没有可导入记录，已取消更新`);
+    const payload = { [config.payloadKey]: rows };
+    const result = await api("/api/libraries", { method: "PUT", body: JSON.stringify(payload) });
+    accountState.users = result.users || accountState.users;
+    accountState.libraries = result.libraries || {};
+    applyLibraryOverrides(accountState.libraries);
+    renderAccountPanel();
+    const userText = config.payloadKey === "users"
+      ? `人员新增 ${result.userResult?.created || 0} 人，更新 ${result.userResult?.updated || 0} 人，跳过 ${result.userResult?.skipped || 0} 行`
+      : `${config.title} ${rows.length} 条`;
+    alert(`已更新：${userText}`);
   } catch (error) {
     alert(error.message);
   } finally {

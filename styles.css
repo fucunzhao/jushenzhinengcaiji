@@ -702,11 +702,52 @@ textarea {
   gap: 10px;
 }
 
+.library-card-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(150px, 1fr));
+  gap: 10px;
+}
+
+.library-card {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  display: grid;
+  gap: 10px;
+  align-content: space-between;
+  background: #fbfdfc;
+}
+
+.library-card > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.library-card b {
+  font-size: 14px;
+}
+
+.library-card strong {
+  font-size: 20px;
+}
+
+.library-card span {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 .library-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+
+.small-button,
+.small-upload {
+  min-height: 34px;
+  padding: 7px 10px;
+  font-size: 12px;
 }
 
 .upload-button {
@@ -1765,6 +1806,10 @@ input:focus, select:focus {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .library-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .request-controls,
   .formal-request-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1992,6 +2037,10 @@ input:focus, select:focus {
 
   .location-device-row b {
     text-align: left;
+  }
+
+  .library-card-grid {
+    grid-template-columns: 1fr;
   }
 
   .section-summary::after {
