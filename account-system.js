@@ -306,7 +306,10 @@ function publishClaimsForTaskPool() {
 function applyLibraryOverrides(libraries = {}) {
   if (libraries.taskLibrary && window.TASK_LIBRARY) Object.assign(window.TASK_LIBRARY, libraries.taskLibrary);
   if (libraries.propInventory && window.PROP_INVENTORY) Object.assign(window.PROP_INVENTORY, libraries.propInventory);
-  if (libraries.locationLibrary && window.LOCATION_LIBRARY) Object.assign(window.LOCATION_LIBRARY, libraries.locationLibrary);
+  if (libraries.locationLibrary && window.LOCATION_LIBRARY) {
+    const locations = Array.isArray(libraries.locationLibrary.locations) ? libraries.locationLibrary.locations : [];
+    if (locations.length) Object.assign(window.LOCATION_LIBRARY, libraries.locationLibrary);
+  }
   if (libraries.deviceLibrary && window.DEVICE_LIBRARY) {
     const devices = Array.isArray(libraries.deviceLibrary.devices) ? libraries.deviceLibrary.devices : [];
     if (devices.length) Object.assign(window.DEVICE_LIBRARY, libraries.deviceLibrary);

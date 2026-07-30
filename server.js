@@ -230,10 +230,12 @@ function normalizeLibraryPayload(payload) {
         if (!target.rooms.includes(room)) target.rooms.push(room);
       });
     });
-    libraries.locationLibrary = {
-      updatedAt: now().slice(0, 10),
-      locations: Array.from(grouped.values()),
-    };
+    if (grouped.size) {
+      libraries.locationLibrary = {
+        updatedAt: now().slice(0, 10),
+        locations: Array.from(grouped.values()),
+      };
+    }
   }
   if (Object.hasOwn(payload, "devices")) {
     const devices = (Array.isArray(payload.devices) ? payload.devices : []).filter((item) => item.id || item.label);
